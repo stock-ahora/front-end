@@ -1,1 +1,2 @@
-﻿export const cls = (...a: (string | false | undefined)[]) => a.filter(Boolean).join(" ")
+﻿export const cls = (...a: Array<string | false | undefined>) => a.filter(Boolean).join(" ")
+
