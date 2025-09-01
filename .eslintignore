@@ -1,0 +1,14 @@
+﻿# next.js
+next.config.js
+
+# tailwindcss
+tailwind.config.js
+
+commitlint.config.js
+
+/public/assets/js/plugins/datatables.min.js
+/public/assets/js/plugins/fullcalendar.min.js
+
+ecs/task_def.json
+
+/src/services/utils/commonService.ts
