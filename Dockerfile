@@ -24,7 +24,7 @@ RUN pnpm build
 FROM base AS runner
 WORKDIR /app
 # Se define el entorno como prod
-ENV NODE_ENV=produccion
+ENV NODE_ENV=production
 # Deshabilitar la telemetría de Next.js
 ENV NEXT_TELEMETRY_DISABLED=1
 # Crea un usuario "no root" para mejorar la seguridad
