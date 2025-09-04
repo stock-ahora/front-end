@@ -5,6 +5,7 @@ const envs = {
 }
 module.exports = {
   output: "standalone",
+  images: { unoptimized: true },
   env: envs[process.env.STAGE || "local"],
   typescript: { ignoreBuildErrors: true },
   reactStrictMode: false
