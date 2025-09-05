@@ -70,7 +70,7 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::859551916894:role/terraform-pipelines
           aws-region: us-east-2
-          role-session-name: tf-gha-plan
+          role-session-name: deploy-s3
 
 
       - name: Sync files to S3
