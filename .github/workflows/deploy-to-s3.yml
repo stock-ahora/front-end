@@ -52,7 +52,7 @@ jobs:
 
     environment:
       name: ${{ github.ref_name }}
-        run: echo "Mi token es ${{ secrets.WEBSITE_URL }}"
+      run: echo "Mi token es ${{ secrets.WEBSITE_URL }}"
       url: https://d1o8awh8a427jj.cloudfront.net
     steps:
       - name: Download artifact
