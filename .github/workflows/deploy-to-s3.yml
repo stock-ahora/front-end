@@ -50,10 +50,10 @@ jobs:
     permissions:
       id-token: write
       contents: read
-      
+
     environment:
       name: ${{ github.ref_name }}
-      url: ${{ secrets.WEBSITE_URL }}
+      url: https://${{ secrets.WEBSITE_URL }}
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v4
