@@ -1,20 +1,14 @@
 name: Build and Deploy to AWS S3
 
 # --- Disparadores (Triggers) ---
-# Esto replica la sección 'rules' de GitLab
 on:
-  # Se ejecuta automáticamente en pushes a 'develop' y 'qa'
   push:
     branches:
       - main
-
-  # Permite la ejecución manual desde la pestaña "Actions" de GitHub.
-  # Esto reemplaza el 'when: manual' para la rama 'main'.
   workflow_dispatch:
 
 jobs:
   # --- JOB 1: CONSTRUIR EL PROYECTO ---
-  # Esto reemplaza el job 'build' de GitLab del que dependías.
   build:
     name: Build Next.js Static Site
     runs-on: ubuntu-latest
@@ -47,7 +41,6 @@ jobs:
           path: ./out # La carpeta que queremos pasar al siguiente job
 
   # --- JOB 2: DESPLEGAR EN AWS ---
-  # Esto reemplaza tu job 'deploy' de GitLab.
   deploy:
     name: Deploy to S3
     runs-on: ubuntu-latest
