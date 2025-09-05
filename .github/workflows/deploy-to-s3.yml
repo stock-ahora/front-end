@@ -46,20 +46,18 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
 
-    # Permisos para autenticación segura con AWS OIDC
     permissions:
       id-token: write
       contents: read
 
     environment:
       name: ${{ github.ref_name }}
-      url: https://${{ secrets.WEBSITE_URL }}
+      url: https://d1o8awh8a427jj.cloudfront.net
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
           name: static-site-artifact
-          # El artefacto se descargará en el directorio actual, creando la carpeta 'out'
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
