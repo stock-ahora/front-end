@@ -32,19 +32,19 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build static website
-        run: pnpm build # Esto creará la carpeta 'out'
+        run: pnpm build
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: static-site-artifact # Nombre del artefacto
-          path: ./out # La carpeta que queremos pasar al siguiente job
+          name: static-site-artifact
+          path: ./out
 
   # --- JOB 2: DESPLEGAR EN AWS ---
   deploy:
     name: Deploy to S3
     runs-on: ubuntu-latest
-    needs: build # ¡Importante! Este job depende de que el job 'build' termine con éxito.
+    needs: build
 
     # Permisos para autenticación segura con AWS OIDC
     permissions:
@@ -54,21 +54,20 @@ jobs:
     # Configuración del entorno de despliegue (opcional pero recomendado)
     # Replica el 'environment' de GitLab y permite reglas de protección
     environment:
-      name: ${{ github.ref_name }} # El nombre del entorno será el nombre de la rama (develop, qa, main)
-      url: ${{ secrets.WEBSITE_URL }} # Opcional: añade la URL de tu sitio en los secretos de GitHub
-
+      name: ${{ github.ref_name }}
+      url: ${{ secrets.WEBSITE_URL }}
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: static-site-artifact # Debe coincidir con el nombre del 'upload'
+          name: static-site-artifact
           # El artefacto se descargará en el directorio actual, creando la carpeta 'out'
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME_ARN }} # ARN del rol de IAM para OIDC
-          aws-region: ${{ secrets.AWS_REGION }} # Tu región de AWS
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Sync files to S3
         run: |
