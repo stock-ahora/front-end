@@ -50,9 +50,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
-
-    # Configuración del entorno de despliegue (opcional pero recomendado)
-    # Replica el 'environment' de GitLab y permite reglas de protección
+      
     environment:
       name: ${{ github.ref_name }}
       url: ${{ secrets.WEBSITE_URL }}
