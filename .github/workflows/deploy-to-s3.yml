@@ -53,9 +53,14 @@ jobs:
     environment:
       name: ${{ github.ref_name }}
       url: https://d1o8awh8a427jj.cloudfront.net
+
+    steps:
+      - name: Debug secrets
+        run: |
+          echo "WEBSITE_URL: ${{ secrets.WEBSITE_URL }}"
+
     steps:
       - name: Download artifact
-        run: echo "Mi token es ${{ secrets.WEBSITE_URL }}"
         uses: actions/download-artifact@v4
         with:
           name: static-site-artifact
