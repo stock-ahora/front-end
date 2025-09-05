@@ -54,29 +54,29 @@ jobs:
       name: ${{ github.ref_name }}
       url: https://d1o8awh8a427jj.cloudfront.net
 
-    steps:
-      - name: Debug secrets
-        run: |
-          echo "WEBSITE_URL: ${{ secrets.WEBSITE_URL }}"
-
     #steps:
-     # - name: Download artifact
-      #  uses: actions/download-artifact@v4
-       # with:
-       #   name: static-site-artifact
+    #  - name: Debug secrets
+    #    run: |
+    #      echo "WEBSITE_URL: ${{ secrets.WEBSITE_URL }}"
 
-#      - name: Configure AWS credentials
-#        uses: aws-actions/configure-aws-credentials@v4
-#        with:
-#          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME_ARN }}
-#          aws-region: ${{ secrets.AWS_REGION }}
-#
-#      - name: Sync files to S3
-#        run: |
-#          aws s3 sync . s3://${{ secrets.AWS_S3_BUCKET_NAME }} --delete
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: static-site-artifact
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Sync files to S3
+        run: |
+          aws s3 sync . s3://${{ secrets.AWS_S3_BUCKET_NAME }} --delete
           # Sincroniza el contenido de 'out' (que está ahora en la raíz) al bucket.
           # La bandera --delete elimina archivos viejos.
 
-#      - name: Invalidate CloudFront cache
-#        run: |
-#          aws cloudfront create-invalidation --distribution-id ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation --distribution-id ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
