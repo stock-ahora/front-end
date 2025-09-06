@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrueStock - Sistema de Inventario</title>
+
+    <!-- Estilos CSS -->
+    <link rel="stylesheet" href="assets/css/styles.css">
+
+    <!-- JavaScript Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.0/axios.min.js"></script>
+</head>
+<body class="bg-gray-50">
+<!-- Loading Overlay -->
+<div id="loading-overlay" class="loading-overlay">
+    <div class="loading-content">
+        <div class="spinner"></div>
+        <p>Cargando inventario...</p>
+    </div>
+</div>
+
+<!-- Header -->
+<header class="header">
+    <div class="header-container">
+        <div class="header-content">
+            <div class="brand">
+                <div class="brand-logo">
+                    <h1 class="brand-title">
+                        <i class="fas fa-boxes"></i>TrueStock
+                    </h1>
+                </div>
+                <nav class="nav-desktop">
+                    <a href="dashboard.html" class="nav-link">Dashboard</a>
+                    <a href="#" class="nav-link nav-active">Inventario</a>
+                    <a href="ocr.html" class="nav-link">Escanear</a>
+                    <a href="#" class="nav-link">Reportes</a>
+                </nav>
+            </div>
+            <div class="header-actions">
+                <div class="search-container">
+                    <div class="search-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <input type="text" id="search-input" class="search-input"
+                           placeholder="Buscar producto..." onkeyup="buscarProductos()">
+                </div>
+                <div class="user-menu">
+                    <button class="user-button">
+                        <img class="user-avatar" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="Usuario">
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Main Content -->
+<main class="main-content">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div class="page-title-section">
+                <h2 class="page-title">Gestión de Inventario</h2>
+                <p class="page-subtitle">
+                    Administra todos los productos en tu inventario, actualiza existencias y precios.
+                </p>
+            </div>
+            <div class="page-actions">
+                <button type="button" onclick="exportarInventario()" class="btn btn-secondary">
+                    <i class="fas fa-file-export"></i> Exportar
+                </button>
+                <button type="button" onclick="abrirModalNuevoProducto()" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Nuevo Producto
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card stat-card-blue">
+            <div class="stat-card-content">
+                <div class="stat-icon stat-icon-blue">
+                    <i class="fas fa-boxes"></i>
+                </div>
+                <div class="stat-info">
+                    <dt class="stat-label">Total de Productos</dt>
+                    <dd class="stat-value" id="total-productos">0</dd>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-card-green">
+            <div class="stat-card-content">
+                <div class="stat-icon stat-icon-green">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <dt class="stat-label">Productos en Stock</dt>
+                    <dd class="stat-value" id="productos-stock">0</dd>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-card-yellow">
+            <div class="stat-card-content">
+                <div class="stat-icon stat-icon-yellow">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="stat-info">
+                    <dt class="stat-label">Stock Bajo</dt>
+                    <dd class="stat-value" id="stock-bajo">0</dd>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-card-red">
+            <div class="stat-card-content">
+                <div class="stat-icon stat-icon-red">
+                    <i class="fas fa-times-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <dt class="stat-label">Agotados</dt>
+                    <dd class="stat-value" id="agotados">0</dd>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filters-card">
+        <div class="filters-content">
+            <div class="filters-grid">
+                <select id="categoria-filter" onchange="aplicarFiltros()" class="filter-select">
+                    <option value="">Todas las categorías</option>
+                    <option value="Electrónicos">Electrónicos</option>
+                    <option value="Computadoras">Computadoras</option>
+                    <option value="Audio">Audio</option>
+                    <option value="Lubricantes">Lubricantes</option>
+                    <option value="Filtros">Filtros</option>
+                </select>
+
+                <select id="estado-filter" onchange="aplicarFiltros()" class="filter-select">
+                    <option value="">Todos los estados</option>
+                    <option value="stock">En Stock</option>
+                    <option value="bajo">Stock Bajo</option>
+                    <option value="agotado">Agotado</option>
+                </select>
+
+                <button onclick="limpiarFiltros()" class="btn btn-secondary btn-clear">
+                    <i class="fas fa-times"></i>Limpiar Filtros
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de Productos -->
+    <div class="table-card">
+        <div class="table-header">
+            <h3 class="table-title">Productos en Inventario</h3>
+            <p class="table-subtitle">
+                Mostrando <span id="productos-mostrados">0</span> productos
+            </p>
+        </div>
+        <div class="table-content">
+            <div class="table-wrapper">
+                <table class="products-table">
+                    <thead>
+                    <tr>
+                        <th class="table-header-cell sortable" onclick="ordenarPor('nombre')">
+                            Producto <i class="fas fa-sort"></i>
+                        </th>
+                        <th class="table-header-cell sortable" onclick="ordenarPor('categoria')">
+                            Categoría <i class="fas fa-sort"></i>
+                        </th>
+                        <th class="table-header-cell">SKU</th>
+                        <th class="table-header-cell sortable" onclick="ordenarPor('stock')">
+                            Existencias <i class="fas fa-sort"></i>
+                        </th>
+                        <th class="table-header-cell sortable" onclick="ordenarPor('precio')">
+                            Precio <i class="fas fa-sort"></i>
+                        </th>
+                        <th class="table-header-cell">Estado</th>
+                        <th class="table-header-cell table-actions-header">
+                            <span class="sr-only">Acciones</span>
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody id="productos-tbody" class="table-body">
+                    <!-- Los productos se cargarán aquí dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Modal Nuevo/Editar Producto -->
+<div id="modal-producto" class="modal hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title" id="modal-titulo">Nuevo Producto</h3>
+            <button onclick="cerrarModal()" class="modal-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form id="form-producto" class="modal-form">
+            <input type="hidden" id="producto-id">
+
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label class="form-label">Nombre del Producto</label>
+                    <input type="text" id="producto-nombre" required class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">SKU</label>
+                    <input type="text" id="producto-sku" required class="form-input">
+                </div>
+            </div>
+
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label class="form-label">Categoría</label>
+                    <select id="producto-categoria" required class="form-select">
+                        <option value="">Seleccionar categoría</option>
+                        <option value="Electrónicos">Electrónicos</option>
+                        <option value="Computadoras">Computadoras</option>
+                        <option value="Audio">Audio</option>
+                        <option value="Lubricantes">Lubricantes</option>
+                        <option value="Filtros">Filtros</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Proveedor</label>
+                    <input type="text" id="producto-proveedor" required class="form-input">
+                </div>
+            </div>
+
+            <div class="form-grid-3">
+                <div class="form-group">
+                    <label class="form-label">Stock Actual</label>
+                    <input type="number" id="producto-stock" required min="0" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Stock Mínimo</label>
+                    <input type="number" id="producto-stock-minimo" required min="0" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Precio</label>
+                    <input type="number" id="producto-precio" required min="0" step="0.01" class="form-input">
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" onclick="cerrarModal()" class="btn btn-secondary">
+                    Cancelar
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <span id="btn-submit-text">Crear Producto</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Notifications -->
+<div id="notification" class="notification hidden">
+    <div class="notification-content">
+        <i id="notification-icon" class="notification-icon"></i>
+        <span id="notification-text"></span>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script src="assets/js/inventario.js"></script>
+</body>
+</html>
