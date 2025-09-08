@@ -1,6 +1,5 @@
-'uso cliente'
+'use client'
 
-import React, { useState, useEffect } from 'react'
 import {
   Package,
   Search,
@@ -13,6 +12,7 @@ import {
   AlertTriangle,
   CheckCircle
 } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 interface Producto {
   id: string
