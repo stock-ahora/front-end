@@ -14,13 +14,13 @@ export default function NotFoundPage() {
                 >
                     Ir a la página principal
                 </a>
-                <div className="mt-10">
-                    <img
-                        src="/assets/img/illustrations/404.svg"
-                        alt="Página no encontrada"
-                        className="mx-auto max-h-64"
-                    />
-                </div>
+                {/*<div className="mt-10">*/}
+                {/*    <img*/}
+                {/*        src="/assets/img/illustrations/404.svg"*/}
+                {/*        alt="Página no encontrada"*/}
+                {/*        className="mx-auto max-h-64"*/}
+                {/*    />*/}
+                {/*</div>*/}
             </div>
         </main>
     )

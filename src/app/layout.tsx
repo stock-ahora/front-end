@@ -2,7 +2,6 @@
 
 import './globals.css'
 import React from 'react'
-import { Login } from '@/config/Global'
 import { primaryFont } from '@/themes/typography'
 import { SettingsProvider } from '@/components/settings/context/settings-provider'
 import { SnackbarProvider } from '@/components/snackbar'

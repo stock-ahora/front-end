@@ -10,48 +10,7 @@ const staticUser = {
 }
 const staticRoles = [TruStockRole.ADMIN]
 
-// ====== AZURE (tu implementación actual) ======
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import {
-  AccountInfo,
-  InteractionRequiredAuthError,
-  PublicClientApplication,
-  SilentRequest
-} from '@azure/msal-browser'
-
-export const msalConfig = {
-  auth: {
-    clientId: process.env.AZURE as string,
-    authority: 'https://login.microsoftonline.com/e2805430-ca04-4f08-a658-8c0a3a59dea3' as string,
-    redirectUri: process.env.AZURE_REDIRECT_URI as string
-  },
-  cache: { cacheLocation: 'localStorage', storeAuthStateInCookie: false }
-}
-export const msalInstance = new PublicClientApplication(msalConfig)
-const getFirstAccount = (): AccountInfo | null => {
-  const accounts = msalInstance.getAllAccounts()
-  return accounts.length > 0 ? accounts[0] : null
-}
-const createSilentRequest = (account: AccountInfo): SilentRequest => ({
-  scopes: [`api://${msalConfig.auth.clientId}/App.Use`],
-  account
-})
-const handleTokenAcquisitionError = async (err: any, silentRequest: SilentRequest) => {
-  if (err instanceof InteractionRequiredAuthError) {
-    try {
-      const response = await msalInstance.acquireTokenPopup(silentRequest)
-      return response.accessToken
-    } catch (error) { console.error('Failed to acquire token interactively', error) }
-  } else {
-    console.error('Failed to acquire token silently', err)
-  }
-  return null
-}
-
-// ====== GOOGLE (futuro NextAuth) ======
-// Aquí podríamos leer desde next-auth si ACTIVAS ese proveedor.
-
-// ====== AWS (Cognito) — placeholder ======
+// ====== AWS (Cognito) ======
 // Cuando conectes Cognito, cambia estas funciones para:
 /// - usar Amplify Auth, o
 /// - @aws-sdk/client-cognito-identity-provider + Hosted UI
