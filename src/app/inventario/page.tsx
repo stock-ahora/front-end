@@ -1,18 +1,8 @@
 'use client'
 
-import {
-  Package,
-  Search,
-  Filter,
-  Plus,
-  Edit3,
-  Trash2,
-  ArrowLeft,
-  Camera,
-  AlertTriangle,
-  CheckCircle
-} from 'lucide-react'
+
 import { useEffect, useState } from 'react'
+import { AlertTriangle, ArrowLeft, Camera, CheckCircle, Edit3, Filter, Package, Plus, Search, Trash2 } from 'lucide-react'
 
 interface Producto {
   id: string
