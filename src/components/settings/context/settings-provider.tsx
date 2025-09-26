@@ -33,7 +33,6 @@ export function SettingsProvider({
     if (isArabic) {
       onChangeDirectionByLang('ar')
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isArabic])
 
   // Direction by lang
@@ -44,7 +43,7 @@ export function SettingsProvider({
     [update]
   )
 
-  // Drawer
+  //
   const onToggleDrawer = useCallback(() => {
     setOpenDrawer((prev) => !prev)
   }, [])

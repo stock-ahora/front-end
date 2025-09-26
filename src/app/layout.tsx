@@ -5,35 +5,48 @@ import React from 'react'
 import { primaryFont } from '@/themes/typography'
 import { SettingsProvider } from '@/components/settings/context/settings-provider'
 import { SnackbarProvider } from '@/components/snackbar'
-import { NotificationProvider } from '@/context/NotificationContext'
 import { Layout } from '@/components/layouts'
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-    const app = (
-        <SnackbarProvider>
-            <SettingsProvider
-                defaultSettings={{
-                    themeMode: 'light',
-                    themeDirection: 'ltr',
-                    themeContrast: 'default',
-                    themeLayout: 'vertical',
-                    themeColorPresets: 'default',
-                    themeStretch: false,
-                }}
-            >
-                <NotificationProvider>
-                    <Layout>
-                        <div>{children}</div>
-                    </Layout>
-                </NotificationProvider>
-            </SettingsProvider>
-        </SnackbarProvider>
-    )
+// 👉 importa tu theme
+import { ThemeProvider, CssBaseline } from '@mui/material'
+import theme from '@/themes/theme'
+import { AuthProvider } from '@/auth/AuthProvider'
 
-    return (
-        <html lang="es" className={primaryFont.className}>
-        <head />
-        <body>{app}</body>
-        </html>
-    )
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const app = (
+    <ThemeProvider theme={theme}>
+      <CssBaseline /> {/* resetea estilos y aplica background */}
+      <SnackbarProvider>
+        <SettingsProvider
+          defaultSettings={{
+            themeMode: 'light',
+            themeDirection: 'ltr',
+            themeContrast: 'default',
+            themeLayout: 'vertical',
+            themeColorPresets: 'default',
+            themeStretch: false,
+          }}
+        >
+          <AuthProvider>
+
+          <Layout>
+            <div>{children}</div>
+          </Layout>
+          </AuthProvider>
+
+        </SettingsProvider>
+      </SnackbarProvider>
+    </ThemeProvider>
+  )
+
+  return (
+    <html lang="es" className={primaryFont.className}>
+    <head />
+    <body>
+
+    {app}
+    </body>
+
+    </html>
+  )
 }

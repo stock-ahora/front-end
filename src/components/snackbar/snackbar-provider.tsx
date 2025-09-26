@@ -52,11 +52,6 @@ export default function SnackbarProvider({ children }: Props) {
           <StyledIcon color="error">
             <Iconify icon="solar:danger-bold" width={24} />
           </StyledIcon>
-        ),
-        loader: (
-          <StyledIcon color="info">
-            <CircularProgress size={24} color="inherit" />
-          </StyledIcon>
         )
       }}
       Components={{
@@ -64,8 +59,7 @@ export default function SnackbarProvider({ children }: Props) {
         info: StyledNotistack,
         success: StyledNotistack,
         warning: StyledNotistack,
-        error: StyledNotistack,
-        loader: StyledNotistack
+        error: StyledNotistack
       }}
       // with close as default
       action={(snackbarId) => (

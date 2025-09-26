@@ -6,6 +6,7 @@ const ROOTS = {
   NOTIFICATIONS: '/notificaciones',
   REPORTS: '/reportes',
   SETTINGS: '/configuracion',
+  LOGIN: '/login',
   OCR: '/ocr', // flujo de escaneo de facturas con OCR wea del sergio
 } as const
 
@@ -14,13 +15,14 @@ const ROOTS = {
 // ----------------------------------------------------------------------
 
 export const paths = {
-  // Dashboard (home)
   dashboard: {
     root: ROOTS.DASHBOARD,
   },
 
-  // Inventario
-  inventory: {
+  public: {
+    login: ROOTS.LOGIN,
+  },
+  private: {
     root: ROOTS.INVENTORY,
     list: `${ROOTS.INVENTORY}`,
     create: `${ROOTS.INVENTORY}/crear`,

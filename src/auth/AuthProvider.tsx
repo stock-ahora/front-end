@@ -1,22 +1,65 @@
-'use client'
+"use client"
 
-import React, { ReactNode } from 'react'
-import { MsalAuthenticationTemplate, MsalProvider } from '@azure/msal-react'
-import { msalInstance } from './msal'
-import { InteractionType } from '@azure/msal-browser'
+import { createContext, useContext, useEffect, useState } from "react"
+import { useRouter, usePathname } from "next/navigation"
+import { paths } from '@/routes/paths'
 
-interface AuthProviderProps {
-  children: ReactNode
+type AuthContextType = {
+  isAuthenticated: boolean
+  login: (token: string) => void
+  logout: () => void
 }
 
-const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+const AuthContext = createContext<AuthContextType | null>(null)
+
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const router = useRouter()
+  const pathname = usePathname()
+
+  useEffect(() => {
+    const token = localStorage.getItem("token")
+    setIsAuthenticated(!!token)
+    setIsLoading(false)
+  }, [])
+
+  const login = (token: string) => {
+    localStorage.setItem("token", token)
+    setIsAuthenticated(true)
+    router.push(paths.dashboard.root)
+  }
+
+  const logout = () => {
+    console.log("Logging out")
+    localStorage.removeItem("token")
+    setIsAuthenticated(false)
+    router.push(paths.public.login)
+  }
+
+  const publicRoutes = [paths.public.login]
+  const isPublicRoute = publicRoutes.some(route => pathname === route)
+  useEffect(() => {
+    if (isLoading) return
+
+    console.log("Auth state:", { isAuthenticated, pathname, isPublicRoute })
+
+    if (!isAuthenticated && !isPublicRoute) {
+      router.push(paths.public.login)
+    } else if (isAuthenticated && isPublicRoute) {
+      router.push(paths.dashboard.root)
+    }
+  }, [isAuthenticated, pathname, router, isLoading, isPublicRoute])
+
   return (
-    <MsalProvider instance={msalInstance}>
-      <MsalAuthenticationTemplate interactionType={InteractionType.Redirect}>
-        {children}
-      </MsalAuthenticationTemplate>
-    </MsalProvider>
+    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+      {isLoading ? <div>Cargando...</div> : children}
+    </AuthContext.Provider>
   )
 }
 
-export default AuthProvider
+export const useAuth = () => {
+  const context = useContext(AuthContext)
+  if (!context) throw new Error("useAuth debe usarse dentro de AuthProvider")
+  return context
+}

@@ -42,7 +42,7 @@ export const useDashboardNavigation = () => {
             items.push({
               title: item.title, // Use parent title for main functionality
               path: child.path,
-              icon: item.icon || child.icon
+              icon: item.icon || child
             })
           }
         })
@@ -118,7 +118,7 @@ export const useDashboardNavigation = () => {
           items.push({
             title: item.title, // Use parent title for main functionality
             path: child.path,
-            icon: item.icon || child.icon
+            icon: item.icon || child
           })
         }
       })
@@ -168,7 +168,7 @@ export const useDashboardNavigation = () => {
           items.push({
             title: item.title, // Use parent title for main functionality
             path: child.path,
-            icon: item.icon || child.icon
+            icon: item.icon || child
           })
         }
       })

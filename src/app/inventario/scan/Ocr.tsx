@@ -1,3 +1,4 @@
+import { paths } from '@/routes/paths'
 
 'uso cliente'
 
@@ -137,7 +138,7 @@ export default function ScanOCRPage() {
     alert('Inventario actualizado exitosamente!')
     
     // Redirigir al dashboard
-    window.location.href = '/dashboard'
+    window.location.href = paths.dashboard.root
   }
 
   const formatPrice = (price: number) => {
