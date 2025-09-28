@@ -18,5 +18,8 @@ interface Producto {
 }
 
 export default function InventarioPage() {
- return(<></>)
+ return(<>
+
+ hola inventario
+ </>)
 }

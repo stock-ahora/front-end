@@ -18,7 +18,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const pathname = usePathname();
-  const isLoginPage = pathname === '/login'; // Ajusta esta ruta según corresponda
+  const isLoginPage = pathname === '/login';
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
