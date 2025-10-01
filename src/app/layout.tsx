@@ -3,6 +3,10 @@ import Providers from "./providers";
 
 export const metadata: Metadata = {
   title: "Stock Ahora",
+  icons: {
+    icon: "/icon-192x192",
+    shortcut: "/icon-192x192.png",
+  },
   description: "Gestión de inventario fácil",
   manifest: "/manifest.json",
 };
