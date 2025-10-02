@@ -7,7 +7,6 @@ import { SettingsProvider } from '@/components/settings/context/settings-provide
 import { SnackbarProvider } from '@/components/snackbar'
 import { Layout } from '@/components/layouts'
 
-// 👉 importa tu theme
 import { ThemeProvider, CssBaseline } from '@mui/material'
 import theme from '@/themes/theme'
 import { AuthProvider } from '@/auth/AuthProvider'
@@ -41,7 +40,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html lang="es" className={primaryFont.className}>
-    <head />
     <body>
 
     {app}

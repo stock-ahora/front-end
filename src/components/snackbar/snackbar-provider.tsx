@@ -4,7 +4,6 @@ import { useRef } from 'react'
 import { closeSnackbar, SnackbarProvider as NotistackProvider } from 'notistack'
 import Collapse from '@mui/material/Collapse'
 import IconButton from '@mui/material/IconButton'
-import CircularProgress from '@mui/material/CircularProgress'
 
 import Iconify from '../iconify'
 import { useSettingsContext } from '../settings'
@@ -61,7 +60,6 @@ export default function SnackbarProvider({ children }: Props) {
         warning: StyledNotistack,
         error: StyledNotistack
       }}
-      // with close as default
       action={(snackbarId) => (
         <IconButton
           size="small"

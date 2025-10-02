@@ -1,79 +1,66 @@
-
+// routes/paths.ts
 const ROOTS = {
-  DASHBOARD: '/',
-  INVENTORY: '/inventario',
-  BILLING: '/facturacion',
-  NOTIFICATIONS: '/notificaciones',
-  REPORTS: '/reportes',
-  SETTINGS: '/configuracion',
-  LOGIN: '/login',
-  OCR: '/ocr', // flujo de escaneo de facturas con OCR wea del sergio
+    DASHBOARD: '/',
+    INVENTORY: '/inventory',
+    BILLING: '/billing',
+    NOTIFICATIONS: '/notifications',
+    REPORTS: '/reports',
+    SETTINGS: '/settings',
+    LOGIN: '/login',
+    OCR: '/ocr',
 } as const
 
-// ----------------------------------------------------------------------
-// Mapa de rutas públicas de la app qla bastarda ctm :v
-// ----------------------------------------------------------------------
-
 export const paths = {
-  dashboard: {
-    root: ROOTS.DASHBOARD,
-  },
+    dashboard: { root: ROOTS.DASHBOARD },
+    public: { login: ROOTS.LOGIN },
 
-  public: {
-    login: ROOTS.LOGIN,
-  },
-  private: {
-    root: ROOTS.INVENTORY,
-    list: `${ROOTS.INVENTORY}`,
-    create: `${ROOTS.INVENTORY}/crear`,
-    edit: (id: string | number) => `${ROOTS.INVENTORY}/${id}/editar`,
-    detail: (id: string | number) => `${ROOTS.INVENTORY}/${id}`,
-    movements: `${ROOTS.INVENTORY}/movimientos`,
-    categories: `${ROOTS.INVENTORY}/categorias`,
-    suppliers: `${ROOTS.INVENTORY}/proveedores`,
-  },
+    inventory: {
+        root: ROOTS.INVENTORY,
+        list: ROOTS.INVENTORY,
+        create: `${ROOTS.INVENTORY}/create`,
+        edit: (id: string | number) => `${ROOTS.INVENTORY}/${id}/edit`,
+        detail: (id: string | number) => `${ROOTS.INVENTORY}/${id}`,
+        movements: `${ROOTS.INVENTORY}/movements`,
+        categories: `${ROOTS.INVENTORY}/categories`,
+        suppliers: `${ROOTS.INVENTORY}/suppliers`,
+    },
 
-  // OCR (escaneo de facturas que impactan inventario)
-  ocr: {
-    root: ROOTS.OCR,
-    scan: `${ROOTS.OCR}/escanear`,
-    history: `${ROOTS.OCR}/historial`,
-  },
+    ocr: {
+        root: ROOTS.OCR,
+        scan: `${ROOTS.OCR}/scan`,
+        history: `${ROOTS.OCR}/history`,
+    },
 
-  // Facturación
-  billing: {
-    root: ROOTS.BILLING,
-    vouchers: `${ROOTS.BILLING}/comprobantes`,
-    voucherDetail: (id: string | number) => `${ROOTS.BILLING}/comprobantes/${id}`,
-    createVoucher: `${ROOTS.BILLING}/comprobantes/crear`,
-    taxes: `${ROOTS.BILLING}/impuestos`,
-    exports: `${ROOTS.BILLING}/exportaciones`,
-  },
+    billing: {
+        root: ROOTS.BILLING,
+        vouchers: `${ROOTS.BILLING}/vouchers`,
+        voucherDetail: (id: string | number) => `${ROOTS.BILLING}/vouchers/${id}`,
+        createVoucher: `${ROOTS.BILLING}/vouchers/create`,
+        taxes: `${ROOTS.BILLING}/taxes`,
+        exports: `${ROOTS.BILLING}/exports`,
+    },
 
-  // Notificaciones
-  notifications: {
-    root: ROOTS.NOTIFICATIONS,
-    pending: `${ROOTS.NOTIFICATIONS}/pendientes`,
-    history: `${ROOTS.NOTIFICATIONS}/historial`,
-    settings: `${ROOTS.NOTIFICATIONS}/configuracion`,
-  },
+    notifications: {
+        root: ROOTS.NOTIFICATIONS,
+        pending: `${ROOTS.NOTIFICATIONS}/pending`,
+        history: `${ROOTS.NOTIFICATIONS}/history`,
+        settings: `${ROOTS.NOTIFICATIONS}/settings`,
+    },
 
-  // Reportes
-  reports: {
-    root: ROOTS.REPORTS,
-    kpis: `${ROOTS.REPORTS}/kpis`,
-    dashboards: `${ROOTS.REPORTS}/dashboards`,
-    exports: `${ROOTS.REPORTS}/descargables`,
-    custom: `${ROOTS.REPORTS}/personalizados`,
-  },
+    reports: {
+        root: ROOTS.REPORTS,
+        kpis: `${ROOTS.REPORTS}/kpis`,
+        dashboards: `${ROOTS.REPORTS}/dashboards`,
+        exports: `${ROOTS.REPORTS}/exports`,
+        custom: `${ROOTS.REPORTS}/custom`,
+    },
 
-  // Configuración
-  settings: {
-    root: ROOTS.SETTINGS,
-    preferences: `${ROOTS.SETTINGS}/preferencias`,
-    users: `${ROOTS.SETTINGS}/usuarios`,
-    roles: `${ROOTS.SETTINGS}/roles`,
-    appearance: `${ROOTS.SETTINGS}/apariencia`,
-    integrations: `${ROOTS.SETTINGS}/integraciones`,
-  },
+    settings: {
+        root: ROOTS.SETTINGS,
+        preferences: `${ROOTS.SETTINGS}/preferences`,
+        users: `${ROOTS.SETTINGS}/users`,
+        roles: `${ROOTS.SETTINGS}/roles`,
+        appearance: `${ROOTS.SETTINGS}/appearance`,
+        integrations: `${ROOTS.SETTINGS}/integrations`,
+    },
 }
