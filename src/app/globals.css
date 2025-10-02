@@ -1,55 +1,8 @@
 /* libs */
 @import 'simplebar-react/dist/simplebar.min.css';
 
-/* Tailwind v4 */
-@import "tailwindcss";
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-
-
-/* ====== Design tokens (global) ====== */
-:root {
-  --radius: 0.75rem;
-
-  /* TrueStock tokens */
-  --background: #ffffff;
-  --foreground: #0f172a; /* texto */
-
-  --primary:   #153BAA;
-  --secondary: #00BFFF;
-
-  --muted:     #f3f4f6;  /* gris claro */
-  --border:    #e5e7eb;  /* gris borde */
-}
-
-/* ====== Utility shims (global) ====== */
-/* Para que puedas usar las clases custom que ya tienes en JSX */
-.bg-background   { background-color: var(--background) !important; }
-.text-foreground { color: var(--foreground) !important; }
-.bg-primary      { background-color: var(--primary) !important; }
-.bg-secondary    { background-color: var(--secondary) !important; }
-.bg-muted        { background-color: var(--muted) !important; }
-.border-border   { border-color: var(--border) !important; }
-.shadow-soft     {
-  box-shadow:
-          0 1px 2px rgba(0,0,0,0.04),
-          0 4px 12px rgba(0,0,0,0.06);
-}
-
-/* ====== Global base ====== */
-body {
-  @apply bg-background text-foreground;
-}
-
-/* ====== Resets varios ====== */
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-input[type=number] { -moz-appearance: textfield; }
-
-/* SweetAlert z-index por encima de todo */
+/* base */
+html, body, #__next { height: 100%; }
+* { box-sizing: border-box; }
+body { margin: 0; }
 .swal2-container { z-index: 9999 !important; }

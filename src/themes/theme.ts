@@ -2,39 +2,69 @@
 import { createTheme } from "@mui/material/styles";
 
 const theme = createTheme({
-  palette: {
-    mode: "light", // "dark" si quieres tema oscuro
-    primary: {
-      main: "#d9b90c", // azul por defecto, cámbialo a tu color
-      contrastText: "#ffffff", // color del texto sobre primary
+    palette: {
+        mode: "light", // "dark" si más adelante quieres tema oscuro
+        primary: {
+            main: "#0056b3",        // azul corporativo
+            contrastText: "#ffffff" // texto claro sobre botones/appbar
+        },
+        secondary: {
+            main: "#4db8ff",        // celeste empresarial
+            contrastText: "#0f172a" // texto oscuro para contraste
+        },
+        error: {
+            main: "#d32f2f"
+        },
+        warning: {
+            main: "#ed6c02"
+        },
+        info: {
+            main: "#0288d1" // azul claro para mensajes informativos
+        },
+        success: {
+            main: "#2e7d32"
+        },
+        background: {
+            default: "#f5f7fa", // fondo general suave
+            paper: "#ffffff"    // fondo de tarjetas y paneles
+        },
+        text: {
+            primary: "#0f172a",   // casi negro, sobrio
+            secondary: "#4f5d75"  // gris azulado para subtítulos
+        }
     },
-    secondary: {
-      main: "#9c27b0",
+    shape: {
+        borderRadius: 12
     },
-    error: {
-      main: "#d32f2f",
+    typography: {
+        fontFamily: "Roboto, Arial, sans-serif",
+        h6: { fontWeight: 600 },
+        button: { textTransform: "none", fontWeight: 600 }
     },
-    warning: {
-      main: "#ed6c02",
-    },
-    info: {
-      main: "#d9b90c", // azul por defecto, cámbialo a tu color
-    },
-    success: {
-      main: "#2e7d32",
-    },
-    background: {
-      default: "#f5f5f5", // fondo general
-      paper: "#ffffff",   // fondo de los componentes tipo Card, Paper
-    },
-    text: {
-      primary: "#000000",
-      secondary: "#555555",
-    },
-  },
-  typography: {
-    fontFamily: "Roboto, Arial, sans-serif",
-  },
+    components: {
+        MuiAppBar: {
+            styleOverrides: {
+                root: {
+                    backgroundColor: "#0056b3" // AppBar en azul corporativo
+                }
+            }
+        },
+        MuiButton: {
+            styleOverrides: {
+                root: {
+                    borderRadius: 8
+                }
+            }
+        },
+        MuiCard: {
+            styleOverrides: {
+                root: {
+                    boxShadow:
+                        "0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.06)"
+                }
+            }
+        }
+    }
 });
 
 export default theme;

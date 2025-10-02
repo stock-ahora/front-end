@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Providers from "./providers";
+import { primaryFont } from '@/themes/typography'
 
 export const metadata: Metadata = {
   title: "Stock Ahora",
@@ -17,7 +18,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es">
+    <html lang="es" className={primaryFont.className}>
     <body>
     <Providers>{children}</Providers>
     </body>
