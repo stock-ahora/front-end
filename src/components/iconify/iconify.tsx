@@ -5,13 +5,11 @@ import Box, { BoxProps } from '@mui/material/Box'
 
 import { IconifyProps } from './types'
 
-// ----------------------------------------------------------------------
 
 interface Props extends BoxProps {
   icon: IconifyProps
 }
 
-// eslint-disable-next-line react/display-name
 const Iconify = forwardRef<SVGElement, Props>(
   ({ icon, width = 20, sx, ...other }, ref) => (
     <Box
