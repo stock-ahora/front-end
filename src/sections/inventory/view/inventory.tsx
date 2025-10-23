@@ -1,113 +1,105 @@
 'use client'
 
-import React, { useMemo, useState } from 'react'
+import React from 'react'
 import {
-    Box, Container, Typography, Card, Stack, TextField, InputAdornment, IconButton, Button, Chip,
-    Table, TableHead, TableRow, TableCell, TableBody, TableContainer, TablePagination, Dialog,
-    DialogTitle, DialogContent, DialogActions, Grid, MenuItem, Select, FormControl, InputLabel,
-    CircularProgress
+    Box, Container, Typography, Card, Stack, TextField, InputAdornment, Button, Chip,
+    Table, TableHead, TableRow, TableCell, TableBody, TableContainer, TablePagination,
+    CircularProgress, Select, MenuItem, FormControl, InputLabel, Dialog, DialogTitle,
+    DialogContent, DialogActions, IconButton
 } from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search'
-import AddIcon from '@mui/icons-material/Add'
-import CloseIcon from '@mui/icons-material/Close'
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
+import AddIcon from '@mui/icons-material/Add'
+import CloseIcon from '@mui/icons-material/Close'
 
-// 👇 Nuevo: usa tu servicio
-import {
-    listProducts,
-    createProduct,
-} from '@/services/inventory/api'
+import { listProducts, createProduct } from '@/services/inventory/api'
 import type { StockProduct } from '@/services/inventory/types'
 
-// Mismo tipo local para la tabla (mapea 1:1 con StockProduct)
 type Item = StockProduct
 
-function formatCLP(n: number) {
-    return new Intl.NumberFormat('es-CL').format(n)
+function getStatusMeta(status?: string) {
+    const s = (status ?? '').toUpperCase()
+    if (s === 'ACTIVE') return { label: 'Activo', color: 'success' as const }
+    if (s === 'INACTIVE') return { label: 'Inactivo', color: 'default' as const }
+    return { label: status ?? 'Desconocido', color: 'warning' as const }
 }
 
 export default function InventoryPage() {
-    // --- estado base ---
-    const [rows, setRows] = useState<Item[]>([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
+    const [rows, setRows] = React.useState<Item[]>([])
+    const [loading, setLoading] = React.useState(true)
+    const [error, setError] = React.useState<string | null>(null)
 
-    // --- filtros/orden/paginación ---
-    const [query, setQuery] = useState('')
-    const [category, setCategory] = useState<string>('Todas')
-    const [status, setStatus] = useState<string>('Todos')
-    const [orderBy, setOrderBy] = useState<keyof Item>('name')
-    const [order, setOrder] = useState<'asc' | 'desc'>('asc')
-    const [page, setPage] = useState(0)
-    const [rowsPerPage, setRowsPerPage] = useState<number>(5) // -1 = "Todos"
+    const [query, setQuery] = React.useState('')
+    const [status, setStatus] = React.useState<string>('Todos') // Todos | ACTIVE | INACTIVE
+    const [orderBy, setOrderBy] = React.useState<keyof Item>('name')
+    const [order, setOrder] = React.useState<'asc' | 'desc'>('asc')
 
-    // modal
-    const [open, setOpen] = useState(false)
+    const [page, setPage] = React.useState(0) // 0-based para MUI
+    const [rowsPerPage, setRowsPerPage] = React.useState<number>(10) // -1 => Todos
+    const [total, setTotal] = React.useState<number>(0)
 
-    // --- cargar datos desde API ---
-    React.useEffect(() => {
-        let alive = true
-        ;(async () => {
-            try {
-                setLoading(true)
-                const data = await listProducts()
-                if (!alive) return
-                setRows(data)
-            } catch (e: any) {
-                if (!alive) return
-                setError(e?.message ?? 'Error al cargar inventario')
-            } finally {
-                if (alive) setLoading(false)
+    const [openCreate, setOpenCreate] = React.useState(false)
+
+    async function fetchPage(p = page, size = rowsPerPage) {
+        try {
+            setLoading(true)
+            setError(null)
+
+            if (size === -1) {
+                const first = await listProducts(1, 1)
+                const all = await listProducts(1, first.total || 1000)
+                const items = all.items
+                const q = query.trim().toLowerCase()
+                let filtered = items
+                if (q) {
+                    filtered = filtered.filter(r =>
+                        (r.name ?? '').toLowerCase().includes(q) ||
+                        (r.description ?? '').toLowerCase().includes(q)
+                    )
+                }
+                if (status !== 'Todos') {
+                    filtered = filtered.filter(r => (r.status ?? '').toUpperCase() === status)
+                }
+                const sorted = sortRows(filtered, orderBy, order)
+                setRows(sorted)
+                setTotal(all.total)
+                return
             }
-        })()
-        return () => {
-            alive = false
-        }
-    }, [])
 
-    const categories = useMemo(
-        () => ['Todas', ...Array.from(new Set(rows.map(r => r.category)))],
-        [rows]
-    )
-    const statuses = ['Todos', 'Activo', 'Inactivo']
+            const { items, total } = await listProducts(p + 1, size)
 
-    const filtered = useMemo(() => {
-        const q = query.trim().toLowerCase()
-        return rows.filter(r => {
-            const matchesQ = !q || r.name.toLowerCase().includes(q) || r.sku.toLowerCase().includes(q)
-            const matchesC = category === 'Todas' || r.category === category
-            const matchesS = status === 'Todos' || r.status === status
-            return matchesQ && matchesC && matchesS
-        })
-    }, [rows, query, category, status])
+            const q = query.trim().toLowerCase()
+            let filtered = items
+            if (q) {
+                filtered = filtered.filter(r =>
+                    (r.name ?? '').toLowerCase().includes(q) ||
+                    (r.description ?? '').toLowerCase().includes(q)
+                )
+            }
+            if (status !== 'Todos') {
+                filtered = filtered.filter(r => (r.status ?? '').toUpperCase() === status)
+            }
 
-    const sorted = useMemo(() => {
-        return [...filtered].sort((a, b) => {
-            const va = a[orderBy]
-            const vb = b[orderBy]
-            if (typeof va === 'number' && typeof vb === 'number') return order === 'asc' ? va - vb : vb - va
-            const sa = String(va).toLowerCase()
-            const sb = String(vb).toLowerCase()
-            return order === 'asc' ? sa.localeCompare(sb) : sb.localeCompare(sa)
-        })
-    }, [filtered, orderBy, order])
-
-    const paged = useMemo(() => {
-        if (rowsPerPage === -1) return sorted
-        const start = page * rowsPerPage
-        return sorted.slice(start, start + rowsPerPage)
-    }, [sorted, page, rowsPerPage])
-
-    const handleSort = (key: keyof Item) => {
-        if (orderBy === key) setOrder(prev => (prev === 'asc' ? 'desc' : 'asc'))
-        else {
-            setOrderBy(key)
-            setOrder('asc')
+            const sorted = sortRows(filtered, orderBy, order)
+            setRows(sorted)
+            setTotal(total)
+        } catch (e: any) {
+            setError(e?.message ?? 'Error al cargar inventario')
+        } finally {
+            setLoading(false)
         }
     }
 
-    // --- UI ---
+    React.useEffect(() => { fetchPage(0, rowsPerPage) }, []) // primera carga
+    React.useEffect(() => { fetchPage(page, rowsPerPage) }, [page, rowsPerPage])
+    React.useEffect(() => { fetchPage(page, rowsPerPage) }, [query, status, orderBy, order])
+
+    const handleSort = (key: keyof Item) => {
+        if (orderBy === key) setOrder(prev => (prev === 'asc' ? 'desc' : 'asc'))
+        else { setOrderBy(key); setOrder('asc') }
+    }
+
     return (
         <Container maxWidth="lg" sx={{ py: 4 }}>
             <Stack
@@ -118,11 +110,14 @@ export default function InventoryPage() {
                 sx={{ mb: 3 }}
             >
                 <Typography variant="h4" fontWeight={800}>Inventario</Typography>
-                <Stack direction="row" spacing={1}>
-                    <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpen(true)}>
-                        Agregar producto
-                    </Button>
-                </Stack>
+
+                <Button
+                    variant="contained"
+                    startIcon={<AddIcon />}
+                    onClick={() => setOpenCreate(true)}
+                >
+                    Agregar producto
+                </Button>
             </Stack>
 
             <Card sx={{ p: 2, mb: 2 }}>
@@ -131,19 +126,9 @@ export default function InventoryPage() {
                         fullWidth
                         value={query}
                         onChange={(e) => { setQuery(e.target.value); setPage(0) }}
-                        placeholder="Buscar por nombre o SKU"
+                        placeholder="Buscar por nombre o descripción"
                         InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon /></InputAdornment> }}
                     />
-                    <FormControl fullWidth>
-                        <InputLabel>Categoría</InputLabel>
-                        <Select
-                            value={category}
-                            label="Categoría"
-                            onChange={(e) => { setCategory(e.target.value); setPage(0) }}
-                        >
-                            {categories.map(c => <MenuItem key={c} value={c}>{c}</MenuItem>)}
-                        </Select>
-                    </FormControl>
                     <FormControl fullWidth>
                         <InputLabel>Estado</InputLabel>
                         <Select
@@ -151,7 +136,9 @@ export default function InventoryPage() {
                             label="Estado"
                             onChange={(e) => { setStatus(e.target.value); setPage(0) }}
                         >
-                            {statuses.map(s => <MenuItem key={s} value={s}>{s}</MenuItem>)}
+                            <MenuItem value="Todos">Todos</MenuItem>
+                            <MenuItem value="ACTIVE">Activo</MenuItem>
+                            <MenuItem value="INACTIVE">Inactivo</MenuItem>
                         </Select>
                     </FormControl>
                 </Stack>
@@ -163,71 +150,87 @@ export default function InventoryPage() {
                         <CircularProgress />
                     </Box>
                 ) : error ? (
-                    <Box sx={{ py: 6, textAlign: 'center', color: 'error.main' }}>
-                        {error}
-                    </Box>
+                    <Box sx={{ py: 6, textAlign: 'center', color: 'error.main' }}>{error}</Box>
                 ) : (
                     <>
                         <TableContainer>
                             <Table size="medium">
                                 <TableHead>
                                     <TableRow>
-                                        <TableCell onClick={() => handleSort('sku')} sx={{ cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                                            SKU {orderBy === 'sku' ? (order === 'asc'
-                                            ? <ArrowUpwardIcon fontSize="inherit" /> : <ArrowDownwardIcon fontSize="inherit" />) : null}
+                                        <TableCell
+                                            onClick={() => handleSort('name')}
+                                            sx={{ cursor: 'pointer', whiteSpace: 'nowrap' }}
+                                        >
+                                            Nombre {orderBy === 'name'
+                                            ? (order === 'asc' ? <ArrowUpwardIcon fontSize="inherit" /> : <ArrowDownwardIcon fontSize="inherit" />)
+                                            : null}
                                         </TableCell>
-                                        <TableCell onClick={() => handleSort('name')} sx={{ cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                                            Nombre {orderBy === 'name' ? (order === 'asc'
-                                            ? <ArrowUpwardIcon fontSize="inherit" /> : <ArrowDownwardIcon fontSize="inherit" />) : null}
+
+                                        <TableCell>Descripción</TableCell>
+
+                                        <TableCell
+                                            align="right"
+                                            onClick={() => handleSort('stock')}
+                                            sx={{ cursor: 'pointer', whiteSpace: 'nowrap' }}
+                                        >
+                                            Stock {orderBy === 'stock'
+                                            ? (order === 'asc' ? <ArrowUpwardIcon fontSize="inherit" /> : <ArrowDownwardIcon fontSize="inherit" />)
+                                            : null}
                                         </TableCell>
-                                        <TableCell onClick={() => handleSort('category')} sx={{ cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                                            Categoría {orderBy === 'category' ? (order === 'asc'
-                                            ? <ArrowUpwardIcon fontSize="inherit" /> : <ArrowDownwardIcon fontSize="inherit" />) : null}
+
+                                        <TableCell
+                                            onClick={() => handleSort('status')}
+                                            sx={{ cursor: 'pointer', whiteSpace: 'nowrap' }}
+                                        >
+                                            Estado {orderBy === 'status'
+                                            ? (order === 'asc' ? <ArrowUpwardIcon fontSize="inherit" /> : <ArrowDownwardIcon fontSize="inherit" />)
+                                            : null}
                                         </TableCell>
-                                        <TableCell align="right" onClick={() => handleSort('stock')} sx={{ cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                                            Stock {orderBy === 'stock' ? (order === 'asc'
-                                            ? <ArrowUpwardIcon fontSize="inherit" /> : <ArrowDownwardIcon fontSize="inherit" />) : null}
-                                        </TableCell>
-                                        <TableCell align="right" onClick={() => handleSort('minStock')} sx={{ cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                                            Mínimo {orderBy === 'minStock' ? (order === 'asc'
-                                            ? <ArrowUpwardIcon fontSize="inherit" /> : <ArrowDownwardIcon fontSize="inherit" />) : null}
-                                        </TableCell>
-                                        <TableCell align="right" onClick={() => handleSort('price')} sx={{ cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                                            Precio {orderBy === 'price' ? (order === 'asc'
-                                            ? <ArrowUpwardIcon fontSize="inherit" /> : <ArrowDownwardIcon fontSize="inherit" />) : null}
-                                        </TableCell>
-                                        <TableCell align="center" onClick={() => handleSort('status')} sx={{ cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                                            Estado {orderBy === 'status' ? (order === 'asc'
-                                            ? <ArrowUpwardIcon fontSize="inherit" /> : <ArrowDownwardIcon fontSize="inherit" />) : null}
+
+                                        <TableCell
+                                            onClick={() => handleSort('updated_at')}
+                                            sx={{ cursor: 'pointer', whiteSpace: 'nowrap' }}
+                                        >
+                                            Actualizado {orderBy === 'updated_at'
+                                            ? (order === 'asc' ? <ArrowUpwardIcon fontSize="inherit" /> : <ArrowDownwardIcon fontSize="inherit" />)
+                                            : null}
                                         </TableCell>
                                     </TableRow>
                                 </TableHead>
+
                                 <TableBody>
-                                    {paged.map(r => {
-                                        const low = r.stock < r.minStock
+                                    {rows.map(r => {
+                                        const meta = getStatusMeta(r.status)
                                         return (
                                             <TableRow key={r.id} hover>
-                                                <TableCell sx={{ whiteSpace: 'nowrap' }}>{r.sku}</TableCell>
-                                                <TableCell sx={{ maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.name}</TableCell>
-                                                <TableCell sx={{ whiteSpace: 'nowrap' }}>{r.category}</TableCell>
+                                                <TableCell sx={{ maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                    {r.name}
+                                                </TableCell>
+                                                <TableCell sx={{ maxWidth: 420, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                    {r.description}
+                                                </TableCell>
                                                 <TableCell align="right">{r.stock}</TableCell>
-                                                <TableCell align="right">{r.minStock}</TableCell>
-                                                <TableCell align="right">${formatCLP(r.price)}</TableCell>
-                                                <TableCell align="center">
+                                                <TableCell>
                                                     <Chip
-                                                        label={low ? 'Bajo stock' : r.status}
-                                                        color={low ? 'warning' : r.status === 'Activo' ? 'success' : 'default'}
+                                                        label={meta.label}
+                                                        color={meta.color}
                                                         size="small"
                                                         sx={{ fontWeight: 700 }}
                                                     />
                                                 </TableCell>
+                                                <TableCell>
+                                                    {r.updated_at ? new Date(r.updated_at).toLocaleString('es-CL') : '—'}
+                                                </TableCell>
                                             </TableRow>
                                         )
                                     })}
-                                    {paged.length === 0 && (
+
+                                    {rows.length === 0 && (
                                         <TableRow>
-                                            <TableCell colSpan={7}>
-                                                <Box sx={{ py: 6, textAlign: 'center', color: 'text.secondary' }}>Sin resultados</Box>
+                                            <TableCell colSpan={5}>
+                                                <Box sx={{ py: 6, textAlign: 'center', color: 'text.secondary' }}>
+                                                    Sin resultados
+                                                </Box>
                                             </TableCell>
                                         </TableRow>
                                     )}
@@ -237,7 +240,7 @@ export default function InventoryPage() {
 
                         <TablePagination
                             component="div"
-                            count={sorted.length}
+                            count={rowsPerPage === -1 ? rows.length : total}
                             page={rowsPerPage === -1 ? 0 : page}
                             onPageChange={(_, p) => setPage(p)}
                             rowsPerPage={rowsPerPage}
@@ -246,58 +249,97 @@ export default function InventoryPage() {
                                 setRowsPerPage(val)
                                 setPage(0)
                             }}
-                            rowsPerPageOptions={[5, 10, 25, { label: 'Todos', value: -1 }]}
+                            rowsPerPageOptions={[5, 10, 25, 50, { label: 'Todos', value: -1 }]}
                             labelRowsPerPage="Filas por página"
                             labelDisplayedRows={({ from, to, count }) =>
-                                rowsPerPage === -1 ? `${count} de ${count}` : `${from}-${to} de ${count}`
+                                rowsPerPage === -1 ? `${rows.length} de ${rows.length}` : `${from}-${to} de ${count}`
                             }
                         />
                     </>
                 )}
             </Card>
 
-            <AddDialog
-                open={open}
-                onClose={() => setOpen(false)}
-                onAdd={async (item) => {
-                    // ✅ crear en backend y refrescar local
-                    try {
-                        const created = await createProduct(item)
-                        setRows(prev => [created, ...prev])
-                        setOpen(false)
-                    } catch (e: any) {
-                        alert(e?.message ?? 'Error al crear producto')
-                    }
+            <CreateProductDialog
+                open={openCreate}
+                onClose={() => setOpenCreate(false)}
+                onCreated={(created) => {
+                    // Inserta el nuevo item arriba y refresca conteo
+                    setRows(prev => [created, ...prev])
+                    setTotal(t => t + 1)
                 }}
-                // sku sugerido local (no bloqueante)
-                nextSku={`TSK-${String(rows.length + 1).padStart(4, '0')}`}
             />
         </Container>
     )
 }
 
-function AddDialog({
-                       open,
-                       onClose,
-                       onAdd,
-                       nextSku
-                   }: {
+/* ---------- helpers ---------- */
+
+function sortRows(rows: Item[], orderBy: keyof Item, order: 'asc' | 'desc') {
+    return [...rows].sort((a, b) => {
+        let va: any = a[orderBy] as any
+        let vb: any = b[orderBy] as any
+
+        if (orderBy === 'updated_at' || orderBy === 'created_at') {
+            const ta = va ? new Date(va).getTime() : 0
+            const tb = vb ? new Date(vb).getTime() : 0
+            return order === 'asc' ? ta - tb : tb - ta
+        }
+
+        if (typeof va === 'number' && typeof vb === 'number') {
+            return order === 'asc' ? va - vb : vb - va
+        }
+
+        const sa = String(va ?? '').toLowerCase()
+        const sb = String(vb ?? '').toLowerCase()
+        return order === 'asc' ? sa.localeCompare(sb) : sb.localeCompare(sa)
+    })
+}
+
+
+function CreateProductDialog({
+                                 open,
+                                 onClose,
+                                 onCreated,
+                             }: {
     open: boolean
     onClose: () => void
-    onAdd: (item: Omit<Item, 'id'>) => Promise<void> | void
-    nextSku: string
+    onCreated: (item: Item) => void
 }) {
-    const [sku, setSku] = useState(nextSku)
-    const [name, setName] = useState('')
-    const [category, setCategory] = useState('Alimentos')
-    const [stock, setStock] = useState<number>(0)
-    const [minStock, setMinStock] = useState<number>(0)
-    const [price, setPrice] = useState<number>(0)
-    const [status, setStatus] = useState<'Activo' | 'Inactivo'>('Activo')
+    const [name, setName] = React.useState('')
+    const [description, setDescription] = React.useState('')
+    const [stock, setStock] = React.useState<number>(0)
+    const [status, setStatus] = React.useState<'ACTIVE' | 'INACTIVE'>('ACTIVE')
+    const [submitting, setSubmitting] = React.useState(false)
 
     React.useEffect(() => {
-        if (open) setSku(nextSku)
-    }, [open, nextSku])
+        if (open) {
+            setName('')
+            setDescription('')
+            setStock(0)
+            setStatus('ACTIVE')
+            setSubmitting(false)
+        }
+    }, [open])
+
+    async function handleSave() {
+        if (!name.trim()) return
+        try {
+            setSubmitting(true)
+            // ajusta el payload a lo que espera tu backend
+            const created = await createProduct({
+                name: name.trim(),
+                description: description.trim(),
+                stock,
+                status,
+            } as any)
+            onCreated(created as Item)
+            onClose()
+        } catch (e: any) {
+            alert(e?.message ?? 'Error al crear producto')
+        } finally {
+            setSubmitting(false)
+        }
+    }
 
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
@@ -306,78 +348,44 @@ function AddDialog({
                 <IconButton onClick={onClose}><CloseIcon /></IconButton>
             </DialogTitle>
             <DialogContent dividers>
-                <Box sx={{ pt: 1 }}>
-                    <Grid container spacing={2}>
-                        <Grid item xs={12} sm={6}>
-                            <TextField fullWidth label="SKU" value={sku} onChange={(e) => setSku(e.target.value)} />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <FormControl fullWidth>
-                                <InputLabel>Estado</InputLabel>
-                                <Select label="Estado" value={status} onChange={(e) => setStatus(e.target.value as any)}>
-                                    <MenuItem value="Activo">Activo</MenuItem>
-                                    <MenuItem value="Inactivo">Inactivo</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Grid>
-                        <Grid item xs={12}>
-                            <TextField fullWidth label="Nombre" value={name} onChange={(e) => setName(e.target.value)} />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <FormControl fullWidth>
-                                <InputLabel>Categoría</InputLabel>
-                                <Select label="Categoría" value={category} onChange={(e) => setCategory(e.target.value)}>
-                                    <MenuItem value="Alimentos">Alimentos</MenuItem>
-                                    <MenuItem value="Limpieza">Limpieza</MenuItem>
-                                    <MenuItem value="Higiene">Higiene</MenuItem>
-                                    <MenuItem value="Bebidas">Bebidas</MenuItem>
-                                    <MenuItem value="Otros">Otros</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Grid>
-                        <Grid item xs={6} sm={3}>
-                            <TextField
-                                fullWidth
-                                type="number"
-                                label="Stock"
-                                value={stock}
-                                onChange={(e) => setStock(Number(e.target.value))}
-                                inputProps={{ min: 0 }}
-                            />
-                        </Grid>
-                        <Grid item xs={6} sm={3}>
-                            <TextField
-                                fullWidth
-                                type="number"
-                                label="Mínimo"
-                                value={minStock}
-                                onChange={(e) => setMinStock(Number(e.target.value))}
-                                inputProps={{ min: 0 }}
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                fullWidth
-                                type="number"
-                                label="Precio"
-                                value={price}
-                                onChange={(e) => setPrice(Number(e.target.value))}
-                                inputProps={{ min: 0 }}
-                            />
-                        </Grid>
-                    </Grid>
-                </Box>
+                <Stack spacing={2} sx={{ pt: 1 }}>
+                    <TextField
+                        label="Nombre"
+                        fullWidth
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                    />
+                    <TextField
+                        label="Descripción"
+                        fullWidth
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                    />
+                    <TextField
+                        label="Stock"
+                        type="number"
+                        inputProps={{ min: 0 }}
+                        fullWidth
+                        value={stock}
+                        onChange={(e) => setStock(Number(e.target.value))}
+                    />
+                    <FormControl fullWidth>
+                        <InputLabel>Estado</InputLabel>
+                        <Select
+                            value={status}
+                            label="Estado"
+                            onChange={(e) => setStatus(e.target.value as 'ACTIVE' | 'INACTIVE')}
+                        >
+                            <MenuItem value="ACTIVE">Activo</MenuItem>
+                            <MenuItem value="INACTIVE">Inactivo</MenuItem>
+                        </Select>
+                    </FormControl>
+                </Stack>
             </DialogContent>
             <DialogActions>
                 <Button onClick={onClose} variant="text">Cancelar</Button>
-                <Button
-                    onClick={async () => {
-                        if (!name.trim()) return
-                        await onAdd({ sku, name: name.trim(), category, stock, minStock, price, status })
-                    }}
-                    variant="contained"
-                >
-                    Guardar
+                <Button onClick={handleSave} variant="contained" disabled={submitting}>
+                    {submitting ? 'Guardando…' : 'Guardar'}
                 </Button>
             </DialogActions>
         </Dialog>
