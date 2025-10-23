@@ -1,9 +1,10 @@
 'use client'
 
-import React, { useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import {
     Box, Container, Typography, Card, Stack, Button, IconButton, Grid, Chip,
-    Table, TableHead, TableRow, TableCell, TableBody, TextField, Divider, Snackbar, Alert, CircularProgress
+    Table, TableHead, TableRow, TableCell, TableBody, TextField, Divider, Snackbar, Alert, CircularProgress,
+  ToggleButtonGroup, ToggleButton
 } from '@mui/material'
 import UploadIcon from '@mui/icons-material/Upload'
 import PhotoCamera from '@mui/icons-material/PhotoCamera'
@@ -11,19 +12,53 @@ import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import SaveIcon from '@mui/icons-material/Save'
 import DeleteIcon from '@mui/icons-material/Delete'
 
-type Item = { id: string; producto: string; cantidad: number; precio: number }
 
 export default function OCRScanPage() {
     const inputRef = useRef<HTMLInputElement | null>(null)
     const cameraRef = useRef<HTMLInputElement | null>(null)
     const [file, setFile] = useState<File | null>(null)
     const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-    const [items, setItems] = useState<Item[]>([])
     const [loadingOCR, setLoadingOCR] = useState(false)
     const [saving, setSaving] = useState(false)
     const [snack, setSnack] = useState<{ open: boolean; msg: string; sev: 'success'|'error'|'info' }>({ open: false, msg: '', sev: 'success' })
+    const [inOut, setInOut] = useState('in');
+    const [requestID, setRequestID] = useState('');
+  const { request, setRequest } = usePollRequest(requestID, 5000, setLoadingOCR);
 
-    const total = useMemo(() => items.reduce((s, it) => s + it.cantidad * it.precio, 0), [items])
+  console.log({loadingOCR})
+  console.log({requestID})
+
+  const handleEnviarSolicitud = async () => {
+    if (!file) return
+    setLoadingOCR(true)
+
+    const fd = new FormData()
+    fd.append('file', file)
+    fd.append('type', inOut)          // 'in' o 'out'
+
+    const res = await fetch('https://ycw3f7srk5.execute-api.us-east-2.amazonaws.com/prod/api/stock/request', {
+      method: 'POST',
+      headers: {
+        // Ojo: NO se setea Content-Type cuando se usa FormData
+        'X-Client-Account-Id': '8d1b88f0-e5c7-4670-8bbb-3045f9ab3995',
+      },
+      body: fd,
+    })
+
+    console.log('Response status:', res)
+
+    if (res.status !== 201) {
+      console.error('Error', await res.text())
+      setLoadingOCR(false)
+      return
+    }
+
+    const data: StockRequest = await res.json();
+
+    setRequestID(data.ID);
+    console.log('OK', data)
+  }
+
 
     const handlePick = () => inputRef.current?.click()
     const handleCamera = () => cameraRef.current?.click()
@@ -33,15 +68,7 @@ export default function OCRScanPage() {
         setFile(f)
         const url = URL.createObjectURL(f)
         setPreviewUrl(url)
-        setItems([])
-        setLoadingOCR(true)
-        setTimeout(() => {
-            setItems([
-                { id: crypto.randomUUID(), producto: 'Producto A', cantidad: 2, precio: 1290 },
-                { id: crypto.randomUUID(), producto: 'Producto B', cantidad: 1, precio: 2590 }
-            ])
-            setLoadingOCR(false)
-        }, 1200)
+        setRequest(undefined)
     }
 
     const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,19 +87,14 @@ export default function OCRScanPage() {
         if (previewUrl) URL.revokeObjectURL(previewUrl)
         setPreviewUrl(null)
         setFile(null)
-        setItems([])
+        setRequest(undefined)
         setLoadingOCR(false)
     }
 
-    const updateItem = (id: string, patch: Partial<Item>) => {
-        setItems(prev => prev.map(it => (it.id === id ? { ...it, ...patch } : it)))
-    }
 
-    const addEmpty = () => setItems(prev => [{ id: crypto.randomUUID(), producto: '', cantidad: 1, precio: 0 }, ...prev])
-    const removeItem = (id: string) => setItems(prev => prev.filter(it => it.id !== id))
 
     const saveToInventory = async () => {
-        if (!file || items.length === 0) {
+        if (!file || request?.movements.length === 0) {
             setSnack({ open: true, msg: 'Falta archivo o ítems', sev: 'error' })
             return
         }
@@ -93,6 +115,26 @@ export default function OCRScanPage() {
             <Stack direction="row" spacing={1} justifyContent="center" sx={{ mb: 2 }}>
                 <Button variant="contained" startIcon={<UploadIcon />} onClick={handlePick}>Subir Factura</Button>
                 <Button variant="outlined" startIcon={<PhotoCamera />} onClick={handleCamera}>Tomar Foto</Button>
+              <ToggleButtonGroup
+                value={inOut}
+                exclusive
+                onChange={(e, v) => v && setInOut(v)}
+                size="small"
+              >
+                <ToggleButton value="in">IN</ToggleButton>
+                <ToggleButton value="out">OUT</ToggleButton>
+              </ToggleButtonGroup>
+
+              <Button
+                variant="contained"
+                startIcon={!loadingOCR && <SaveIcon />}
+                disabled={!file || request?.movements?.length === 0 || loadingOCR}
+                onClick={handleEnviarSolicitud}
+                sx={{ borderRadius: 999, px: 3 }}
+              >
+                {loadingOCR ? 'Enviando…' : 'Enviar solicitud'}
+              </Button>
+
                 <IconButton onClick={resetAll} disabled={!file}><RestartAltIcon /></IconButton>
             </Stack>
 
@@ -135,7 +177,7 @@ export default function OCRScanPage() {
                             <Typography variant="subtitle1" fontWeight={700}>Datos extraídos</Typography>
                             <Stack direction="row" spacing={1}>
                                 <Chip label={file ? file.name : 'Sin archivo'} />
-                                <Chip label={items.length ? `${items.length} ítems` : '0 ítems'} color={items.length ? 'success' : 'default'} />
+                                <Chip label={request?.movements.length ? `${request?.movements.length} ítems` : '0 ítems'} color={request?.movements.length ? 'success' : 'default'} />
                             </Stack>
                         </Stack>
 
@@ -153,19 +195,17 @@ export default function OCRScanPage() {
                                         <TableRow>
                                             <TableCell>Producto</TableCell>
                                             <TableCell align="right">Cantidad</TableCell>
-                                            <TableCell align="right">$</TableCell>
                                             <TableCell align="center">Acciones</TableCell>
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
-                                        {items.map(it => (
+                                        {request?.movements.map(it => (
                                             <TableRow key={it.id}>
                                                 <TableCell>
                                                     <TextField
                                                         fullWidth
                                                         size="small"
-                                                        value={it.producto}
-                                                        onChange={(e) => updateItem(it.id, { producto: e.target.value })}
+                                                        value={it.nombre}
                                                     />
                                                 </TableCell>
                                                 <TableCell align="right" sx={{ width: 108 }}>
@@ -174,26 +214,30 @@ export default function OCRScanPage() {
                                                         size="small"
                                                         type="number"
                                                         inputProps={{ min: 0 }}
-                                                        value={it.cantidad}
-                                                        onChange={(e) => updateItem(it.id, { cantidad: Math.max(0, Number(e.target.value)) })}
-                                                    />
-                                                </TableCell>
-                                                <TableCell align="right" sx={{ width: 140 }}>
-                                                    <TextField
-                                                        fullWidth
-                                                        size="small"
-                                                        type="number"
-                                                        inputProps={{ min: 0 }}
-                                                        value={it.precio}
-                                                        onChange={(e) => updateItem(it.id, { precio: Math.max(0, Number(e.target.value)) })}
+                                                        value={it.count}
+                                                        onChange={(e) => {
+                                                          const val = parseInt(e.target.value, 10) || 0
+
+                                                          setRequest(prev => {
+                                                            if (!prev) return prev             // por si null
+
+                                                            return {
+                                                              ...prev,
+                                                              movements: prev.movements.map(m =>
+                                                                m.id === it.id
+                                                                  ? { ...m, count: val }       // actualizo solo este movimiento
+                                                                  : m
+                                                              ),
+                                                            }
+                                                          })
+                                                        }}
                                                     />
                                                 </TableCell>
                                                 <TableCell align="center" sx={{ width: 88 }}>
-                                                    <IconButton onClick={() => removeItem(it.id)}><DeleteIcon fontSize="small" /></IconButton>
                                                 </TableCell>
                                             </TableRow>
                                         ))}
-                                        {items.length === 0 && (
+                                        {request?.movements.length === 0 && (
                                             <TableRow>
                                                 <TableCell colSpan={4}>
                                                     <Box sx={{ py: 4, textAlign: 'center', color: 'text.secondary' }}>Sin datos</Box>
@@ -204,10 +248,8 @@ export default function OCRScanPage() {
                                 </Table>
 
                                 <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 2 }}>
-                                    <Button onClick={addEmpty}>Agregar fila</Button>
+                                    <Button onClick={() => {}}>Agregar fila</Button>
                                     <Stack direction="row" spacing={2} alignItems="center">
-                                        <Typography variant="subtitle2">Total</Typography>
-                                        <Typography variant="h6" fontWeight={800}>${new Intl.NumberFormat('es-CL').format(total)}</Typography>
                                     </Stack>
                                 </Stack>
 
@@ -217,7 +259,7 @@ export default function OCRScanPage() {
                                     <Button
                                         variant="contained"
                                         startIcon={<SaveIcon />}
-                                        disabled={!file || items.length === 0 || saving}
+                                        disabled={!file || request?.movements.length === 0 || saving}
                                         onClick={saveToInventory}
                                         sx={{ borderRadius: 999, px: 3 }}
                                     >
@@ -242,4 +284,79 @@ export default function OCRScanPage() {
             </Snackbar>
         </Container>
     )
+}
+
+export interface StockRequest {
+  ID: string;
+  ClientAccountID: string;
+  Status: string;
+  CreatedAt: string;     // o Date si después la parseas
+  UpdatedAt: string;
+  MovementTypeId: number;
+  Documents: any | null; // ajustalo si conocés el shape
+}
+
+export interface Movement {
+  id: string;
+  nombre: string;
+  count: number;
+  created_at: string;   // ISO datetime
+  updated_at: string;   // ISO datetime
+}
+
+export interface Request {
+  id: string;
+  request_type: 'in' | 'out' | string;
+  status: 'pending' | 'approved' | 'rejected' | string;
+  created_at: string;     // ISO datetime
+  updated_at: string;     // ISO datetime
+  client_account_id: string;
+  movements: Movement[];
+}
+
+export function usePollRequest(id: string | null, intervalMs = 3000, loadingSetter?: (loading: boolean) => void) {
+  const [request, setRequest] = useState<Request>();
+  const timer = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchOnce = async () => {
+      try {
+        console.log('Polling request ID:', id);
+        loadingSetter?.(true);
+        const r = await fetch(
+          `https://ycw3f7srk5.execute-api.us-east-2.amazonaws.com/prod/api/stock/request/${id}`,
+          { headers: { "X-Client-Account-Id": "8d1b88f0-e5c7-4670-8bbb-3045f9ab3995" } }
+        );
+        const resultObject = await convertData(r);
+        setRequest(resultObject);
+
+        // 👇 Cortar polling si ya pasó a otro estado
+        if (resultObject.movements.length !== 0) {
+          if (timer.current) clearInterval(timer.current);
+          loadingSetter?.(false);
+        }
+      } finally {
+      }
+    };
+
+
+
+    fetchOnce();
+    // luego cada X tiempo
+    timer.current = setInterval(fetchOnce, intervalMs);
+
+    // cleanup al desmontar
+    return () => {
+      if (timer.current) clearInterval(timer.current);
+    };
+  }, [id]);
+
+  const convertData = async (res: Response): Promise<Request> => {
+    const json = await res.json();
+    return json as Request;
+  };
+
+  return { request, setRequest };
 }
