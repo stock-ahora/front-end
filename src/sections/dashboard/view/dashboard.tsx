@@ -255,7 +255,7 @@ export default function DashboardSelector() {
             <NotifyPopup
                 message="Tienes nuevas notificaciones disponibles."
                 severity="info"
-                autoOpenOnceKey="ts_seen_dashboard_toast_v1"
+                autoOpenOnceKey="ts_seen_dashboard_toast_v222"
             />
 
             <ChatbotWidget/>
