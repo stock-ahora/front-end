@@ -36,7 +36,7 @@ export default function OCRScanPage() {
     fd.append('file', file)
     fd.append('type', inOut)          // 'in' o 'out'
 
-    const res = await fetch('https://ycw3f7srk5.execute-api.us-east-2.amazonaws.com/prod/api/stock/request', {
+    const res = await fetch('https://pr1vz28mok.execute-api.us-east-2.amazonaws.com/prod/api/stock/request', {
       method: 'POST',
       headers: {
         // Ojo: NO se setea Content-Type cuando se usa FormData
@@ -326,7 +326,7 @@ export function usePollRequest(id: string | null, intervalMs = 3000, loadingSett
         console.log('Polling request ID:', id);
         loadingSetter?.(true);
         const r = await fetch(
-          `https://ycw3f7srk5.execute-api.us-east-2.amazonaws.com/prod/api/stock/request/${id}`,
+          `https://pr1vz28mok.execute-api.us-east-2.amazonaws.com/prod/api/stock/request/${id}`,
           { headers: { "X-Client-Account-Id": "8d1b88f0-e5c7-4670-8bbb-3045f9ab3995" } }
         );
         const resultObject = await convertData(r);
