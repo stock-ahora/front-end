@@ -55,7 +55,7 @@ export default function DashboardSelector() {
             hint: 'Productos bajo stock'
         },
         {
-            title: 'Reportes',
+            title: 'Dashboard',
             icon: AssessmentIcon,
             href: '/reports',
             bg: 'linear-gradient(135deg, #edf1ff 0%, #f3f0ff 100%)',

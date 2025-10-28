@@ -68,7 +68,7 @@ const seedMock = (): Notification[] => [
         type: 'info',
         timestamp: new Date(Date.now() - 1000 * 60 * 150),
         read: true,
-        actionUrl: '/reportes'
+        actionUrl: '/Dashboard'
     }
 ]
 

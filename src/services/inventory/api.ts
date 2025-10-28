@@ -35,13 +35,27 @@ function toStockProduct(p: BackendProduct): StockProduct {
 }
 
 export async function listProducts(page = 1, size = 10) {
-    const r = await fetch(`/api/stock/products?page=${page}&size=${size}`, { cache: 'no-store' })
-    const j = await r.json().catch(() => ({}))
+  const r = await fetch(
+    `https://pr1vz28mok.execute-api.us-east-2.amazonaws.com/prod/api/v1/stock/product?page=${page}&size=${size}`,
+    {
+      method: 'GET',
+      cache: 'no-store',
+      headers: {
+        'X-Client-Account-Id': '8d1b88f0-e5c7-4670-8bbb-3045f9ab3995',
+        'Content-Type': 'application/json',
+      },
+    },
+  )
+
+
+  console.log('r', r)
+  const j = await r.json().catch(() => ({}))
     if (!r.ok) {
         const msg = typeof j?.error === 'string' ? j.error : j?.error ? JSON.stringify(j.error) : `HTTP ${r.status}`
         throw new Error(msg)
     }
     const items = (j.data ?? []) as any[]
+  console.log('j', j)
     return { items, total: j.total ?? 0, page: j.page ?? page, size: j.size ?? size, total_pages: j.total_pages ?? 0 }
 }
 

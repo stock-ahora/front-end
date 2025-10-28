@@ -7,6 +7,7 @@ import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import SendRoundedIcon from '@mui/icons-material/SendRounded'
 import HelpOutlineRoundedIcon from '@mui/icons-material/HelpOutlineRounded'
 import MinimizeRoundedIcon from '@mui/icons-material/MinimizeRounded'
+import { Autocomplete } from '@mui/material'
 
 type Message = { id: string; role: 'user' | 'bot'; text: string; at: number }
 
@@ -23,6 +24,30 @@ export default function ChatbotWidget() {
     ])
     const [unread, setUnread] = useState(0)
     const boxRef = useRef<HTMLDivElement | null>(null)
+    const [productos, setProductos] = useState<any[]>([])
+    const [productoSel, setProductoSel] = useState<any>(null)
+
+  useEffect(() => {
+    fetch('https://pr1vz28mok.execute-api.us-east-2.amazonaws.com/prod/api/v1/stock/product?page=1&size=1000', {
+      headers: {
+        'X-Client-Account-Id': '8d1b88f0-e5c7-4670-8bbb-3045f9ab3995',
+      },
+    })
+      .then(r => r.json())
+      .then(j => setProductos(j.data))
+  }, [])
+
+  // transformamos para crear label único (como countries)
+  const options = productos.map(p => ({
+    id: p.id,
+    name: p.name,
+    stock: p.stock,
+    // label ÚNICO y humano (como en el ejemplo)
+    label: `${p.name} — ${p.id.slice(0, 4)}`,
+  }))
+
+
+  console.log({productoSel})
 
     useEffect(() => {
         if (open) {
@@ -33,34 +58,46 @@ export default function ChatbotWidget() {
         }
     }, [open, messages.length])
 
-    const send = (text: string) => {
+    const send = async (text: string) => {
+      console.log({text})
         if (!text.trim()) return
-        const userMsg: Message = {id: crypto.randomUUID(), role: 'user', text: text.trim(), at: Date.now()}
-        setMessages(prev => [...prev, userMsg])
+        if (!productoSel) return
+
+      const r = await fetch('https://pr1vz28mok.execute-api.us-east-2.amazonaws.com/prod/api/v1/stock/chatbot?productId='+productoSel+"&queryClient="+text, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Client-Account-Id': productoSel,
+        },
+      })
+      const j = await r.json()
+      const first = j?.output?.message?.content?.[0].text ?? null;
+
+      console.log({first, j})
+
+      const Request = {
+        id: crypto.randomUUID(),
+        role: 'user',
+        text: text,
+        at: Date.now()
+      } as Message
+
+
+      const responseChatBot = {
+          id: crypto.randomUUID(),
+          role: 'bot',
+          text: first,
+          at: Date.now()
+      } as Message
+
+        setMessages(prev => [...prev, Request])
+        setMessages(prev => [...prev, responseChatBot])
         setInput('')
-        setTimeout(() => {
-            const replyText =
-                text.toLowerCase().includes('inventario')
-                    ? 'Para inventario: ve a Inventario → Ingresos/Egresos. ¿Quieres que te guíe paso a paso?'
-                    : text.toLowerCase().includes('factura') || text.toLowerCase().includes('boleta')
-                        ? 'Para emitir factura: Facturación → Nueva factura. Puedes traer productos desde el inventario.'
-                        : text.toLowerCase().includes('reporte') || text.toLowerCase().includes('reportes')
-                            ? 'Reportes: Reports → Selecciona el tablero o genera un PDF desde filtros.'
-                            : 'Puedo ayudarte con inventario, facturación y reportes. ¿Qué deseas hacer ahora?'
-            const botMsg: Message = {id: crypto.randomUUID(), role: 'bot', text: replyText, at: Date.now()}
-            setMessages(prev => [...prev, botMsg])
-            if (!open) setUnread(u => u + 1)
-        }, 500)
+
     }
 
-    const quick = useMemo(
-        () => [
-            {label: '¿Cómo crear una factura?', value: '¿Cómo crear una factura?'},
-            {label: 'Actualizar stock', value: 'Quiero actualizar el stock'},
-            {label: 'Ver reportes', value: '¿Dónde veo los reportes?'}
-        ],
-        []
-    )
+
+
 
     return (
         <>
@@ -98,11 +135,12 @@ export default function ChatbotWidget() {
                     sx={{
                         position: 'fixed',
                         right: 20,
+                      overflow: 'visible',
+                      overflowY: 'visible',
                         bottom: 96,
                         width: {xs: 320, sm: 360},
                         height: 480,
                         borderRadius: 3,
-                        overflow: 'hidden',
                         display: 'flex',
                         flexDirection: 'column',
                         zIndex: 1400
@@ -129,7 +167,7 @@ export default function ChatbotWidget() {
                                     Asistente
                                 </Typography>
                                 <Typography variant="caption" sx={{opacity: 0.9}}>
-                                    Ayuda sobre procesos
+                                    Ayuda sobre productos y inventario
                                 </Typography>
                             </Box>
                         </Stack>
@@ -174,16 +212,7 @@ export default function ChatbotWidget() {
 
                     <Box sx={{px: 2, pt: 1}}>
                         <Stack direction="row" spacing={1} flexWrap="wrap">
-                            {quick.map(q => (
-                                <Chip
-                                    key={q.label}
-                                    size="small"
-                                    label={q.label}
-                                    onClick={() => send(q.value)}
-                                    sx={{mb: 1}}
-                                    variant="outlined"
-                                />
-                            ))}
+
                         </Stack>
                     </Box>
 
@@ -191,29 +220,74 @@ export default function ChatbotWidget() {
 
                     <Box sx={{p: 1.5}}>
                         <Stack direction="row" spacing={1}>
-                            <TextField
-                                fullWidth
-                                size="small"
-                                placeholder="Escribe tu mensaje..."
-                                value={input}
-                                onChange={e => setInput(e.target.value)}
-                                onKeyDown={e => {
-                                    if (e.key === 'Enter' && !e.shiftKey) {
-                                        e.preventDefault()
-                                        send(input)
-                                    }
-                                }}
-                            />
-                            <Button
-                                variant="contained"
-                                onClick={() => send(input)}
-                                startIcon={<SendRoundedIcon/>}
-                                sx={{minWidth: 0, px: 2}}
-                            >
-                                Enviar
-                            </Button>
                         </Stack>
                     </Box>
+                  <Box sx={{p: 1.5,
+                    sx: { zIndex: 99999 },
+                  }}>
+                    <Autocomplete
+                      disablePortal
+                      slotProps={{
+                        popper: {
+                          sx: { zIndex: 3000 },   // por encima del Paper (1400 en tu case)
+                        }
+                      }}
+                      sx={{ width: 300 }}
+                      options={options}
+                      autoHighlight
+
+                      // qué se muestra en el input
+                      getOptionLabel={(option) => option.label}
+
+                      value={options.find(o => o.id === productoSel) ?? null}
+                      onChange={(_, v) => setProductoSel(v?.id ?? null)}
+
+                      renderOption={(props, option) => {
+                        const { key, ...rest } = props
+                        return (
+                          <Box key={key} component="li" {...rest}>
+                            {option.name} — stock:{option.stock}
+                          </Box>
+                        )
+                      }}
+
+                      renderInput={(params) =>
+                        <TextField
+                          {...params}
+                          label="Selecciona producto"
+                          inputProps={{
+                            ...params.inputProps,
+                            autoComplete: 'new-password', // igual que tu ejemplo
+                          }}
+                        />
+                      }
+                    />
+
+
+                    <Stack direction="row" spacing={1}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        placeholder="Escribe tu mensaje..."
+                        value={input}
+                        onChange={e => setInput(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault()
+                            send(input)
+                          }
+                        }}
+                      />
+                      <Button
+                        variant="contained"
+                        onClick={() => send(input)}
+                        startIcon={<SendRoundedIcon/>}
+                        sx={{minWidth: 0, px: 2}}
+                      >
+                        Enviar
+                      </Button>
+                    </Stack>
+                  </Box>
                 </Paper>
             )}
         </>

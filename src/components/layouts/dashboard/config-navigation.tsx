@@ -19,12 +19,12 @@ export function useNavData() {
             },
             {
               title: 'Inventario',
-              path: paths.private.root,
+              //path: paths.private.root,
               roles: ['ADMIN', 'OPERADOR', 'CONSULTA'] as Role[],
               icon: <FiPackage />,
               children: [
-                { title: 'Listado', path: paths.private.list, roles: ['ADMIN', 'OPERADOR', 'CONSULTA'] as Role[] },
-                { title: 'Movimientos', path: paths.private.movements, roles: ['ADMIN', 'OPERADOR'] as Role[] },
+               // { title: 'Listado', path: paths.private.list, roles: ['ADMIN', 'OPERADOR', 'CONSULTA'] as Role[] },
+               // { title: 'Movimientos', path: paths.private.movements, roles: ['ADMIN', 'OPERADOR'] as Role[] },
                 { title: 'OCR Facturas', path: paths.ocr.root, roles: ['ADMIN', 'OPERADOR'] as Role[], icon: <FiCamera /> }
               ]
             },
@@ -47,7 +47,7 @@ export function useNavData() {
               ]
             },
             {
-              title: 'Reportes',
+              title: 'Dashboard',
               path: paths.reports.root,
               roles: ['ADMIN', 'OPERADOR', 'CONSULTA'] as Role[],
               icon: <FiBarChart2 />,

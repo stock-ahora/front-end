@@ -39,7 +39,7 @@ export function Layout({children}: { children: React.ReactNode }) {
     if (isLoginPage) return <>{children}</>
 
     const items = [
-        {label: 'Reportes', href: '/reportes', icon: <AssessmentIcon/>},
+        {label: 'Dashboard', href: '/Dashboard', icon: <AssessmentIcon/>},
         {label: 'Inventario', href: '/inventario', icon: <InventoryIcon/>},
         {label: 'Facturación', href: '/facturacion', icon: <ReceiptIcon/>},
         {label: 'Notificaciones', href: '/notificaciones', icon: <NotificationsIcon/>},
