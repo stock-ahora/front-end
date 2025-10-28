@@ -13,6 +13,8 @@ const baseConfig = {
     typescript: { ignoreBuildErrors: true },
     reactStrictMode: false,
     images: { unoptimized: true },
+  output: 'export',
+
 }
 
 const withPwa = withPWA({

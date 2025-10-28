@@ -34,9 +34,6 @@ jobs:
       - name: Build static website
         run: pnpm build
 
-      - name: Export static site       # <-- necesario
-        run: pnpm next export
-
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
