@@ -138,7 +138,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
             title: 'Factura procesada (OCR)',
             message: `Factura Nº ${folio} ingresada al inventario.`,
             type: 'success',
-            actionUrl: '/facturacion'
+            actionUrl: '/OCR'
         })
     }, [addNotification])
 

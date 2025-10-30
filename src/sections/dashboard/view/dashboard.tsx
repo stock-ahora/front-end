@@ -41,7 +41,7 @@ export default function DashboardSelector() {
             bg: 'linear-gradient(135deg, #eaf2ff 0%, #f4f8ff 100%)',
             ring: '#cfe0ff',
             avatarBg: 'linear-gradient(45deg,#0056b3,#4db8ff)',
-            badge: 3,
+            badge: 0,
             hint: 'Revisa alertas recientes'
         },
         {
@@ -51,7 +51,7 @@ export default function DashboardSelector() {
             bg: 'linear-gradient(135deg, #e6f6ff 0%, #eefbff 100%)',
             ring: '#b3e6ff',
             avatarBg: 'linear-gradient(45deg,#0288d1,#4db8ff)',
-            badge: 2,
+            badge: 0,
             hint: 'Productos bajo stock'
         },
         {
@@ -65,13 +65,13 @@ export default function DashboardSelector() {
             hint: 'Resumen y KPI'
         },
         {
-            title: 'Facturación',
+            title: 'OCR Online',
             icon: ReceiptIcon,
             href: '/invoice',
             bg: 'linear-gradient(135deg, #fff8e1 0%, #fff3cd 100%)',
             ring: '#ffe69b',
             avatarBg: 'linear-gradient(45deg,#ffa726,#ffd54f)',
-            badge: 1,
+            badge: 0,
             hint: 'Documentos por emitir'
         }
     ] as const

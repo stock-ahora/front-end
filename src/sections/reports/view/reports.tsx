@@ -11,7 +11,7 @@ import {alpha} from '@mui/material/styles'
 import { BarChart } from '@mui/x-charts/BarChart';
 
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
-import { LineChart } from '@mui/x-charts'
+import { LineChart, PieChart } from '@mui/x-charts'
 
 
 type ReportKind = 'quiebres' | 'rotacion' | 'aging' | 'valorizacion' | 'facturas' | 'sla'
@@ -43,6 +43,16 @@ export default function ReportsPage() {
     egresos: number;
   }
 
+  type summaryForClient = {
+    ingresos: number;
+    egresos: number;
+  }
+
+  type stockTrend = {
+    fecha: string,
+    stock_acumulado: number
+  }
+
     const [to, setTo] = useState<string>(new Date().toISOString().slice(0, 10))
     const [filters, setFilters] = useState({producto: '', categoria: ''})
     const [openProg, setOpenProg] = useState(false)
@@ -59,8 +69,8 @@ export default function ReportsPage() {
 
   const [productos, setProductos] = useState<ProductoTop[]>([])
   const [productosOverTime, setProductosOverTime] = useState<OverTimeProduct[]>([])
-
-
+  const [summary, setSummary] = useState<summaryForClient>({ingresos: 0, egresos: 0})
+  const [stockTrends, setStockTrends] = useState<stockTrend[]>([])
 
   useEffect(() => {
 
@@ -97,13 +107,49 @@ export default function ReportsPage() {
       .catch((err) => console.error(err));
   }, [clientId]);
 
+  useEffect(() => {
+
+    fetch(
+      'https://pr1vz28mok.execute-api.us-east-2.amazonaws.com/prod/api/v1/dashboard?typeRequet=summaryForClient',
+      {
+        headers: {
+          'X-Client-Account-Id': clientId
+        }
+      }
+    )
+      .then((res) => res.json())
+      .then((data: summaryForClient) => {
+        console.log('data', data);
+        setSummary(data);
+      })
+      .catch((err) => console.error(err));
+  }, [clientId]);
+
+  useEffect(() => {
+
+    fetch(
+      'https://pr1vz28mok.execute-api.us-east-2.amazonaws.com/prod/api/v1/dashboard?typeRequet=stockTrend',
+      {
+        headers: {
+          'X-Client-Account-Id': clientId
+        }
+      }
+    )
+      .then((res) => res.json())
+      .then((data: stockTrend[]) => {
+        console.log('data trend', data);
+        setStockTrends(data);
+      })
+      .catch((err) => console.error(err));
+  }, [clientId]);
+
 
   const chartData = useMemo(() => {
-    return productosOverTime.map(d => ({
+    return productosOverTime.length !== 0? productosOverTime.map(d => ({
       x: d.fecha.slice(0,10),              // ej: "2024-01-01"
-      in: Number(d.ingresos) || 0,
-      out: Number(d.egresos) || 0,
-    }));
+      ingresos: Number(d.ingresos ?? 0),
+      egresos: Number(d.egresos ?? 0),
+    })):[];
   }, [productosOverTime]);
 
   console.log('chartData', chartData);
@@ -142,17 +188,15 @@ export default function ReportsPage() {
                            justifyContent="space-between" gap={1.25}>
                         <Stack spacing={0.25}>
                             <Typography variant="h4" fontWeight={900}>Dashboard</Typography>
-                            <Typography variant="body2" sx={{opacity: 0.92}}>Ejecución, visualización y
+                            <Typography variant="body2" sx={{opacity: 0.92}}>Visualización y
                                 exportación</Typography>
                         </Stack>
-                        <Chip icon={<CalendarMonthIcon sx={{color: '#fff !important'}}/>} variant="outlined"
-                              label={to} sx={{borderColor: 'rgba(255,255,255,.35)', color: '#fff'}}/>
                     </Stack>
                 </Card>
 
                 <Grid container spacing={{xs: 2, md: 3}}>
                     <Grid item xs={12}>
-                      <Card sx={{ p:{xs:1.75,md:2.25}, borderRadius:4 }}>
+                      <Card sx={{ p:{xs:1.75,md:2.25}, borderRadius:4, marginBottom: 4 }}>
                         <Grid container spacing={2.5}>
 
                           <Grid item xs={12}>
@@ -177,7 +221,7 @@ export default function ReportsPage() {
 
                         </Grid>
                       </Card>
-                      <Card sx={{ p:{xs:1.75,md:2.25}, borderRadius:4 }}>
+                      <Card sx={{ p:{xs:1.75,md:2.25}, borderRadius:4, marginBottom: 4 }}>
                         <Grid container spacing={2.5}>
 
                           <Grid item xs={12}>
@@ -193,12 +237,78 @@ export default function ReportsPage() {
                                 <LineChart
                                   width={width}
                                   height={400}
-                                  xAxis={[{ data: chartData.map(r => r.x) }]}
+                                  dataset={chartData} // directamente tu array
+                                  xAxis={[{ dataKey: 'x', label: 'Fecha', scaleType: 'band' }]}
                                   series={[
-                                    { id: 'Ingresos', data: chartData.map(r => r.in) },
-                                    { id: 'Egresos',  data: chartData.map(r => r.out) },
+                                    { id: 'Ingresos', dataKey: 'ingresos', label: 'Ingresos', color: '#4CAF50' },
+                                    { id: 'Egresos',  dataKey: 'egresos',  label: 'Egresos',  color: '#F44336' },
                                   ]}
                                 />
+                              )}
+                            </Box>
+                          </Grid>
+
+                        </Grid>
+                      </Card>
+
+                      <Card sx={{ p:{xs:1.75,md:2.25}, borderRadius:4 , marginBottom: 4}}>
+                        <Grid container spacing={2.5}>
+
+                          <Grid item xs={12}>
+                            <Typography variant="h6" sx={{ mb:2 }}>
+                              Ingresos vs Egresos
+                            </Typography>
+                          </Grid>
+
+                          <Grid item xs={12}>
+                            {/* Este box define el ancho dinámico */}
+                            <Box ref={boxRef} sx={{ width: '100%' }}>
+                              {width > 0 && (
+
+                                <PieChart
+                                  series={[{
+                                    data: [
+                                      { id: 'Ingresos', value: summary.ingresos, label: 'Ingresos' },
+                                      { id: 'Egresos', value: summary.egresos, label: 'Egresos' },
+                                    ],
+                                  }]}
+                                  width={400}
+                                  height={300}
+                                />
+
+                              )}
+                            </Box>
+                          </Grid>
+
+                        </Grid>
+                      </Card>
+
+
+                      <Card sx={{ p:{xs:1.75,md:2.25}, borderRadius:4 , marginBottom: 4}}>
+                        <Grid container spacing={2.5}>
+
+                          <Grid item xs={12}>
+                            <Typography variant="h6" sx={{ mb:2 }}>
+                              Tendencia de stock
+                            </Typography>
+                          </Grid>
+
+                          <Grid item xs={12}>
+                            {/* Este box define el ancho dinámico */}
+                            <Box ref={boxRef} sx={{ width: '100%' }}>
+                              {width > 0 && (
+
+                                <LineChart
+                                  dataset={stockTrends}
+                                  xAxis={[{ dataKey: 'fecha', label: 'Fecha', scaleType: 'band' }]}
+                                  series={[
+                                    { id: 'Stock acumulado', dataKey: 'stock_acumulado', label: 'Stock acumulado', area: true, color: '#1976d2' },
+                                  ]}
+                                  width={700}
+                                  height={400}
+                                />
+
+
                               )}
                             </Box>
                           </Grid>

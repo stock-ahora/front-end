@@ -63,6 +63,16 @@ export default function ChatbotWidget() {
         if (!text.trim()) return
         if (!productoSel) return
 
+      const Request = {
+        id: crypto.randomUUID(),
+        role: 'user',
+        text: text,
+        at: Date.now()
+      } as Message
+
+
+      setMessages(prev => [...prev, Request])
+
       const r = await fetch('https://pr1vz28mok.execute-api.us-east-2.amazonaws.com/prod/api/v1/stock/chatbot?productId='+productoSel+"&queryClient="+text, {
         method: 'GET',
         headers: {
@@ -75,12 +85,6 @@ export default function ChatbotWidget() {
 
       console.log({first, j})
 
-      const Request = {
-        id: crypto.randomUUID(),
-        role: 'user',
-        text: text,
-        at: Date.now()
-      } as Message
 
 
       const responseChatBot = {
@@ -90,7 +94,7 @@ export default function ChatbotWidget() {
           at: Date.now()
       } as Message
 
-        setMessages(prev => [...prev, Request])
+
         setMessages(prev => [...prev, responseChatBot])
         setInput('')
 

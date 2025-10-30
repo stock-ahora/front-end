@@ -334,7 +334,6 @@ function CreateProductDialog({
                 stock,
                 status,
             } as any)
-            onCreated(created as Item)
             onClose()
         } catch (e: any) {
             alert(e?.message ?? 'Error al crear producto')
@@ -384,26 +383,47 @@ function ProductDetailDialog({
     const [loading, setLoading] = React.useState(false)
     const [movements, setMovements] = React.useState<Movement[]>([])
 
+
+
+
     React.useEffect(() => {
         let mounted = true
         async function load() {
-            if (!product) return
-            setLoading(true)
-            try {
-                const now = Date.now()
-                const ex: Movement[] = [
-                    { count: 3, date_limit: new Date(now + 3 * 24 * 3600 * 1000).toISOString(), type: 'entrada', created_at: new Date(now - 12 * 3600 * 1000).toISOString(), updated_at: new Date(now - 6 * 3600 * 1000).toISOString() },
-                    { count: 1, date_limit: null, type: 'salida', created_at: new Date(now - 3 * 24 * 3600 * 1000).toISOString(), updated_at: new Date(now - 2 * 24 * 3600 * 1000).toISOString() },
-                    { count: 2, date_limit: new Date(now + 10 * 24 * 3600 * 1000).toISOString(), type: 'entrada', created_at: new Date(now - 7 * 24 * 3600 * 1000).toISOString(), updated_at: new Date(now - 7 * 24 * 3600 * 1000).toISOString() }
-                ]
-                if (mounted) setMovements(ex)
-            } finally {
-                if (mounted) setLoading(false)
-            }
+
+          const r = await fetch('https://pr1vz28mok.execute-api.us-east-2.amazonaws.com/prod/api/v1/stock/product/'+product?.id, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          })
+
+          const j = await r.json()
+          console.log('j', j)
+
+          const mov: Movement[] = j.data.map((m: any) => ({
+            count: m.count,
+            created_at: m.created_at,
+            updated_at: m.updated_at,
+            type : m.type_movement === 1 ? 'entrada' : 'salida',
+          }));
+
+          console.log({mov})
+
+          setMovements(mov)
+
+          setLoading(false)
         }
-        if (open) load()
-        return () => { mounted = false }
+
+      if (open) {
+        load()
+      }else{
+        setMovements([])
+      }
     }, [open, product])
+
+  console.log({movements, loading})
+
+  console.log({open})
 
     const meta = getStatusMeta(product?.status)
     const glass = {
@@ -465,7 +485,6 @@ function ProductDetailDialog({
                                 <TableHead>
                                     <TableRow>
                                         <TableCell sx={{ whiteSpace: 'nowrap' }}>Count</TableCell>
-                                        <TableCell sx={{ whiteSpace: 'nowrap' }}>Fecha límite</TableCell>
                                         <TableCell sx={{ whiteSpace: 'nowrap' }}>Tipo</TableCell>
                                         <TableCell sx={{ whiteSpace: 'nowrap' }}>Creado</TableCell>
                                         <TableCell sx={{ whiteSpace: 'nowrap' }}>Actualizado</TableCell>
@@ -487,7 +506,6 @@ function ProductDetailDialog({
                                     ) : movements.map((m, i) => (
                                         <TableRow key={i} hover>
                                             <TableCell>{m.count}</TableCell>
-                                            <TableCell>{m.date_limit ? new Date(m.date_limit).toLocaleString('es-CL') : '—'}</TableCell>
                                             <TableCell>
                                                 <Chip label={m.type === 'entrada' ? 'Entrada' : 'Salida'} size="small" color={m.type === 'entrada' ? 'success' : 'warning'} sx={{ fontWeight: 700 }} />
                                             </TableCell>

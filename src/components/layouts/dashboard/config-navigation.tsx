@@ -29,7 +29,7 @@ export function useNavData() {
               ]
             },
             {
-              title: 'Facturación',
+              title: 'OCR Online',
               path: paths.billing.root,
               roles: ['ADMIN', 'OPERADOR', 'CONSULTA'] as Role[],
               icon: <FiFileText />,

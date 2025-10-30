@@ -41,7 +41,7 @@ export function Layout({children}: { children: React.ReactNode }) {
     const items = [
         {label: 'Dashboard', href: '/Dashboard', icon: <AssessmentIcon/>},
         {label: 'Inventario', href: '/inventario', icon: <InventoryIcon/>},
-        {label: 'Facturación', href: '/facturacion', icon: <ReceiptIcon/>},
+        {label: 'OCR Online', href: '/OCR', icon: <ReceiptIcon/>},
         {label: 'Notificaciones', href: '/notificaciones', icon: <NotificationsIcon/>},
         {label: 'Dashboard', href: '/', icon: <DashboardIcon/>},
     ]
