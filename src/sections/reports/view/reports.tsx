@@ -73,76 +73,40 @@ export default function ReportsPage() {
   const [stockTrends, setStockTrends] = useState<stockTrend[]>([])
 
   useEffect(() => {
+    if (!clientId) return;
 
-    fetch(
-      'https://pr1vz28mok.execute-api.us-east-2.amazonaws.com/prod/api/v1/dashboard?typeRequet=topProducts',
-      {
-        headers: {
-          'X-Client-Account-Id': clientId
-        }
+    const fetchData = async () => {
+      try {
+        const baseUrl = 'https://pr1vz28mok.execute-api.us-east-2.amazonaws.com/prod/api/v1/dashboard';
+        const headers = { 'X-Client-Account-Id': clientId };
+
+        // 1️⃣ Top Products
+        const resTop = await fetch(`${baseUrl}?typeRequet=topProducts`, { headers });
+        const topProducts: ProductoTop[] = await resTop.json();
+        setProductos(topProducts);
+
+        // 2️⃣ Movement Over Time
+        const resMove = await fetch(`${baseUrl}?typeRequet=movementOverTime`, { headers });
+        const movementOverTime: OverTimeProduct[] = await resMove.json();
+        setProductosOverTime(movementOverTime);
+
+        // 3️⃣ Summary for Client
+        const resSummary = await fetch(`${baseUrl}?typeRequet=summaryForClient`, { headers });
+        const summary: summaryForClient = await resSummary.json();
+        setSummary(summary);
+
+        // 4️⃣ Stock Trend
+        const resTrend = await fetch(`${baseUrl}?typeRequet=stockTrend`, { headers });
+        const stockTrends: stockTrend[] = await resTrend.json();
+        setStockTrends(stockTrends);
+
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
       }
-    )
-      .then((res) => res.json())
-      .then((data: ProductoTop[]) => {
-        setProductos(data);
-      })
-      .catch((err) => console.error(err));
+    };
+
+    fetchData();
   }, [clientId]);
-
-  useEffect(() => {
-
-    fetch(
-      'https://pr1vz28mok.execute-api.us-east-2.amazonaws.com/prod/api/v1/dashboard?typeRequet=movementOverTime',
-      {
-        headers: {
-          'X-Client-Account-Id': clientId
-        }
-      }
-    )
-      .then((res) => res.json())
-      .then((data: OverTimeProduct[]) => {
-        console.log('data', data);
-        setProductosOverTime(data);
-      })
-      .catch((err) => console.error(err));
-  }, [clientId]);
-
-  useEffect(() => {
-
-    fetch(
-      'https://pr1vz28mok.execute-api.us-east-2.amazonaws.com/prod/api/v1/dashboard?typeRequet=summaryForClient',
-      {
-        headers: {
-          'X-Client-Account-Id': clientId
-        }
-      }
-    )
-      .then((res) => res.json())
-      .then((data: summaryForClient) => {
-        console.log('data', data);
-        setSummary(data);
-      })
-      .catch((err) => console.error(err));
-  }, [clientId]);
-
-  useEffect(() => {
-
-    fetch(
-      'https://pr1vz28mok.execute-api.us-east-2.amazonaws.com/prod/api/v1/dashboard?typeRequet=stockTrend',
-      {
-        headers: {
-          'X-Client-Account-Id': clientId
-        }
-      }
-    )
-      .then((res) => res.json())
-      .then((data: stockTrend[]) => {
-        console.log('data trend', data);
-        setStockTrends(data);
-      })
-      .catch((err) => console.error(err));
-  }, [clientId]);
-
 
   const chartData = useMemo(() => {
     return productosOverTime.length !== 0? productosOverTime.map(d => ({
@@ -212,8 +176,8 @@ export default function ReportsPage() {
                                 <BarChart
                                   width={width}
                                   height={400}
-                                  xAxis={[{ data: productos.map(p => p.nombre_producto) }]}
-                                  series={[{ data: productos.map(p => p.unidades) }]}
+                                  xAxis={[{ data: productos?.map(p => p?.nombre_producto) }]}
+                                  series={[{ data: productos?.map(p => p?.unidades) }]}
                                 />
                               )}
                             </Box>

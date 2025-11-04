@@ -177,7 +177,7 @@ export default function OCRScanPage() {
                             <Typography variant="subtitle1" fontWeight={700}>Datos extraídos</Typography>
                             <Stack direction="row" spacing={1}>
                                 <Chip label={file ? file.name : 'Sin archivo'} />
-                                <Chip label={request?.movements.length ? `${request?.movements.length} ítems` : '0 ítems'} color={request?.movements.length ? 'success' : 'default'} />
+                                <Chip label={request?.movements?.length ? `${request?.movements?.length} ítems` : '0 ítems'} color={request?.movements?.length ? 'success' : 'default'} />
                             </Stack>
                         </Stack>
 

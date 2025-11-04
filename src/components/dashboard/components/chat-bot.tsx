@@ -70,7 +70,7 @@ export default function ChatbotWidget() {
         at: Date.now()
       } as Message
 
-
+      setInput('')
       setMessages(prev => [...prev, Request])
 
       const r = await fetch('https://pr1vz28mok.execute-api.us-east-2.amazonaws.com/prod/api/v1/stock/chatbot?productId='+productoSel+"&queryClient="+text, {
@@ -96,7 +96,7 @@ export default function ChatbotWidget() {
 
 
         setMessages(prev => [...prev, responseChatBot])
-        setInput('')
+
 
     }
 

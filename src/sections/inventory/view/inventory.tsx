@@ -56,15 +56,7 @@ const COLORS = {
     dark: '#262626'
 }
 
-const DEMO_PRODUCT: NormalizedItem = {
-    id: 'DEMO-001',
-    name: 'Demo – Lápiz HB #2',
-    description: 'Producto de ejemplo para vista detallada',
-    stock: 42,
-    status: 'ACTIVE',
-    updated_at: new Date().toISOString(),
-    created_at: new Date(Date.now() - 3 * 24 * 3600 * 1000).toISOString()
-}
+
 
 function getStatusMeta(status?: string) {
     const s = String(status ?? '').toUpperCase()
@@ -142,8 +134,7 @@ export default function InventoryPage() {
                 }
                 const sorted = sortRows(filtered, orderBy, order)
                 if (sorted.length === 0) {
-                    setRows([DEMO_PRODUCT])
-                    setTotal(1)
+
                 } else {
                     setRows(sorted)
                     setTotal(sorted.length)
@@ -161,19 +152,15 @@ export default function InventoryPage() {
             }
             const sorted = sortRows(filtered, orderBy, order)
             if ((q || status !== 'Todos') && sorted.length === 0) {
-                setRows([DEMO_PRODUCT])
-                setTotal(1)
+
             } else if (!q && status === 'Todos' && sorted.length === 0) {
-                setRows([DEMO_PRODUCT])
-                setTotal(1)
+
             } else {
                 setRows(sorted)
                 setTotal(q || status !== 'Todos' ? sorted.length : resp.total)
             }
         } catch (e: any) {
-            setRows([DEMO_PRODUCT])
-            setTotal(1)
-            setError(null)
+
         } finally {
             setLoading(false)
         }
