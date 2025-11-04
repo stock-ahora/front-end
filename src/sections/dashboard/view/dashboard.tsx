@@ -25,6 +25,7 @@ import {esES} from '@mui/x-date-pickers/locales'
 
 import ChatbotWidget from '@/components/dashboard/components/chat-bot'
 import NotifyPopup from '@/components/ui/notify-popup'
+import AutoGraphIcon from '@mui/icons-material/AutoGraph'; // perfecto para "modelo predictivo"
 
 dayjs.locale('es')
 
@@ -37,6 +38,8 @@ export default function DashboardSelector() {
         {
             title: 'Notificaciones',
             icon: NotificationsIcon,
+          disabled: false,
+
             href: '/notification',
             bg: 'linear-gradient(135deg, #eaf2ff 0%, #f4f8ff 100%)',
             ring: '#cfe0ff',
@@ -47,6 +50,8 @@ export default function DashboardSelector() {
         {
             title: 'Inventario',
             icon: InventoryIcon,
+          disabled: false,
+
             href: '/inventory',
             bg: 'linear-gradient(135deg, #e6f6ff 0%, #eefbff 100%)',
             ring: '#b3e6ff',
@@ -57,6 +62,7 @@ export default function DashboardSelector() {
         {
             title: 'Dashboard',
             icon: AssessmentIcon,
+          disabled: false,
             href: '/reports',
             bg: 'linear-gradient(135deg, #edf1ff 0%, #f3f0ff 100%)',
             ring: '#d8cff6',
@@ -67,13 +73,26 @@ export default function DashboardSelector() {
         {
             title: 'OCR Online',
             icon: ReceiptIcon,
+          disabled: false,
             href: '/invoice',
             bg: 'linear-gradient(135deg, #fff8e1 0%, #fff3cd 100%)',
             ring: '#ffe69b',
             avatarBg: 'linear-gradient(45deg,#ffa726,#ffd54f)',
             badge: 0,
             hint: 'Documentos por emitir'
-        }
+        },
+
+      {
+        title: 'Modelo Predictivo',
+        icon: AutoGraphIcon, // icono de tendencia / predicción
+        disabled: true,
+        href: '/predictive-model',
+        bg: 'linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%)', // fondo rojizo suave
+        ring: '#ef5350', // rojo suave para el anillo
+        avatarBg: 'linear-gradient(45deg,#e53935,#ef5350)', // degradado rojo
+        badge: 0,
+        hint: 'Basado en análisis predictivo-PROXIMAMENTE'
+      }
     ] as const
 
     return (
@@ -132,6 +151,8 @@ export default function DashboardSelector() {
                                                         boxShadow: '0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.06)',
                                                         transition: 'transform .2s ease, box-shadow .2s ease',
                                                         overflow: 'hidden',
+                                                        opacity: t.disabled ? 0.5 : 1, // 👈 se ve atenuado
+                                                        pointerEvents: t.disabled ? 'none' : 'auto', // 👈 no clickeable
                                                         '&:hover': {
                                                             transform: 'translateY(-3px)',
                                                             boxShadow: '0 10px 26px rgba(0,0,0,0.12)',

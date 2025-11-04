@@ -232,8 +232,8 @@ export default function ReportsPage() {
                                 <PieChart
                                   series={[{
                                     data: [
-                                      { id: 'Ingresos', value: summary.ingresos, label: 'Ingresos' },
-                                      { id: 'Egresos', value: summary.egresos, label: 'Egresos' },
+                                      { id: 'Ingresos', value: summary.ingresos, label: `Ingresos (${summary.ingresos})`},
+                                      { id: 'Egresos', value: summary.egresos, label: `Egresos (${summary.egresos})` },
                                     ],
                                   }]}
                                   width={400}

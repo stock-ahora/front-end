@@ -44,6 +44,7 @@ export function Layout({children}: { children: React.ReactNode }) {
         {label: 'OCR Online', href: '/OCR', icon: <ReceiptIcon/>},
         {label: 'Notificaciones', href: '/notificaciones', icon: <NotificationsIcon/>},
         {label: 'Dashboard', href: '/', icon: <DashboardIcon/>},
+
     ]
 
     return (
