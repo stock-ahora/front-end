@@ -121,8 +121,8 @@ export default function OCRScanPage() {
                 onChange={(e, v) => v && setInOut(v)}
                 size="small"
               >
-                <ToggleButton value="in">IN</ToggleButton>
-                <ToggleButton value="out">OUT</ToggleButton>
+                <ToggleButton value="in">ENTRADA</ToggleButton>
+                <ToggleButton value="out">SALIDA</ToggleButton>
               </ToggleButtonGroup>
 
               <Button

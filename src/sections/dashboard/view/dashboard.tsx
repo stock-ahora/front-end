@@ -85,7 +85,7 @@ export default function DashboardSelector() {
       {
         title: 'Modelo Predictivo',
         icon: AutoGraphIcon, // icono de tendencia / predicción
-        disabled: true,
+        disabled: false,
         href: '/predictive-model',
         bg: 'linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%)', // fondo rojizo suave
         ring: '#ef5350', // rojo suave para el anillo
@@ -135,7 +135,7 @@ export default function DashboardSelector() {
                     </Divider>
 
                     <Grid container spacing={4} alignItems="stretch">
-                        <Grid item xs={12} md={8}>
+                        <Grid item xs={12} md={12}>
                             <Grid container spacing={2}>
                                 {quickTiles.map((t) => {
                                     const Icon = t.icon
@@ -219,56 +219,56 @@ export default function DashboardSelector() {
                             </Grid>
                         </Grid>
 
-                        <Grid item xs={12} md={4}>
-                            <Card
-                                sx={{
-                                    borderRadius: 3,
-                                    height: '100%',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    border: 'none',
-                                    boxShadow: '0 1px 6px rgba(0,0,0,0.06)'
-                                }}
-                            >
-                                <CardHeader
-                                    avatar={<CalendarMonthIcon color="primary"/>}
-                                    title={<Typography variant="h6" fontWeight={800}>Calendario</Typography>}
-                                    subheader={<Typography variant="body2" color="text.secondary">Agenda y
-                                        vencimientos</Typography>}
-                                    sx={{pb: 0.5}}
-                                />
-                                <CardContent sx={{pt: 1}}>
-                                    <LocalizationProvider
-                                        dateAdapter={AdapterDayjs}
-                                        adapterLocale="es"
-                                        localeText={esES.components.MuiLocalizationProvider.defaultProps.localeText}
-                                    >
-                                        <DateCalendar
-                                            sx={{
-                                                borderRadius: 2,
-                                                bgcolor: '#f9fafc',
-                                                boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.04)',
-                                                p: 1.5,
-                                                '& .MuiPickersDay-root': {
-                                                    borderRadius: '8px',
-                                                    '&.Mui-selected': (t) => ({
-                                                        background: `linear-gradient(45deg, ${t.palette.primary.main}, ${t.palette.primary.light})`
-                                                    })
-                                                },
-                                            }}
-                                        />
-                                    </LocalizationProvider>
+                        {/*<Grid item xs={12} md={4}>*/}
+                        {/*    <Card*/}
+                        {/*        sx={{*/}
+                        {/*            borderRadius: 3,*/}
+                        {/*            height: '100%',*/}
+                        {/*            display: 'flex',*/}
+                        {/*            flexDirection: 'column',*/}
+                        {/*            border: 'none',*/}
+                        {/*            boxShadow: '0 1px 6px rgba(0,0,0,0.06)'*/}
+                        {/*        }}*/}
+                        {/*    >*/}
+                        {/*        <CardHeader*/}
+                        {/*            avatar={<CalendarMonthIcon color="primary"/>}*/}
+                        {/*            title={<Typography variant="h6" fontWeight={800}>Calendario</Typography>}*/}
+                        {/*            subheader={<Typography variant="body2" color="text.secondary">Agenda y*/}
+                        {/*                vencimientos</Typography>}*/}
+                        {/*            sx={{pb: 0.5}}*/}
+                        {/*        />*/}
+                        {/*        <CardContent sx={{pt: 1}}>*/}
+                        {/*            <LocalizationProvider*/}
+                        {/*                dateAdapter={AdapterDayjs}*/}
+                        {/*                adapterLocale="es"*/}
+                        {/*                localeText={esES.components.MuiLocalizationProvider.defaultProps.localeText}*/}
+                        {/*            >*/}
+                        {/*                <DateCalendar*/}
+                        {/*                    sx={{*/}
+                        {/*                        borderRadius: 2,*/}
+                        {/*                        bgcolor: '#f9fafc',*/}
+                        {/*                        boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.04)',*/}
+                        {/*                        p: 1.5,*/}
+                        {/*                        '& .MuiPickersDay-root': {*/}
+                        {/*                            borderRadius: '8px',*/}
+                        {/*                            '&.Mui-selected': (t) => ({*/}
+                        {/*                                background: `linear-gradient(45deg, ${t.palette.primary.main}, ${t.palette.primary.light})`*/}
+                        {/*                            })*/}
+                        {/*                        },*/}
+                        {/*                    }}*/}
+                        {/*                />*/}
+                        {/*            </LocalizationProvider>*/}
 
-                                    <Stack direction="row" spacing={1.5} alignItems="center" sx={{mt: 1}}>
-                                        <InfoOutlinedIcon fontSize="small" sx={{color: 'text.secondary'}}/>
-                                        <Stack direction="row" spacing={1} flexWrap="wrap">
-                                            <Chip size="small" label="Vence hoy" color="error" variant="outlined"/>
-                                            <Chip size="small" label="Entrega" color="primary" variant="outlined"/>
-                                        </Stack>
-                                    </Stack>
-                                </CardContent>
-                            </Card>
-                        </Grid>
+                        {/*            <Stack direction="row" spacing={1.5} alignItems="center" sx={{mt: 1}}>*/}
+                        {/*                <InfoOutlinedIcon fontSize="small" sx={{color: 'text.secondary'}}/>*/}
+                        {/*                <Stack direction="row" spacing={1} flexWrap="wrap">*/}
+                        {/*                    <Chip size="small" label="Vence hoy" color="error" variant="outlined"/>*/}
+                        {/*                    <Chip size="small" label="Entrega" color="primary" variant="outlined"/>*/}
+                        {/*                </Stack>*/}
+                        {/*            </Stack>*/}
+                        {/*        </CardContent>*/}
+                        {/*    </Card>*/}
+                        {/*</Grid>*/}
                     </Grid>
                 </Card>
             </Container>

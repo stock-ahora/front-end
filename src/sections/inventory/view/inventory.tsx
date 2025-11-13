@@ -79,6 +79,12 @@ function normalizeItem(r: Item): NormalizedItem {
     }
 }
 
+function formatShortId(id: string) {
+    if (!id) return '—'
+    return id.length > 10 ? `${id.slice(0, 8)}` : id
+}
+
+
 function sortRows(rows: NormalizedItem[], orderBy: keyof NormalizedItem, order: 'asc' | 'desc') {
     return [...rows].sort((a, b) => {
         const va = (a as any)[orderBy]
@@ -237,7 +243,7 @@ export default function InventoryPage() {
                                         const meta = getStatusMeta(r.status)
                                         return (
                                             <TableRow key={r.id} hover sx={{ cursor: 'pointer' }} onClick={() => { setSelected(r); setDetailOpen(true) }}>
-                                                <TableCell sx={{ whiteSpace: 'nowrap' }}>{r.id}</TableCell>
+                                                <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatShortId(r.id)}</TableCell>
                                                 <TableCell sx={{ maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.name || '—'}</TableCell>
                                                 <TableCell sx={{ maxWidth: 420, overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.description || '—'}</TableCell>
                                                 <TableCell align="right">{Number.isFinite(r.stock) ? r.stock : 0}</TableCell>

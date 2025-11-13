@@ -39,11 +39,10 @@ export function Layout({children}: { children: React.ReactNode }) {
     if (isLoginPage) return <>{children}</>
 
     const items = [
-        {label: 'Dashboard', href: '/Dashboard', icon: <AssessmentIcon/>},
-        {label: 'Inventario', href: '/inventario', icon: <InventoryIcon/>},
-        {label: 'OCR Online', href: '/OCR', icon: <ReceiptIcon/>},
-        {label: 'Notificaciones', href: '/notificaciones', icon: <NotificationsIcon/>},
-        {label: 'Dashboard', href: '/', icon: <DashboardIcon/>},
+        {label: 'Dashboard', href: '/reports', icon: <AssessmentIcon/>},
+        {label: 'Inventario', href: '/inventory', icon: <InventoryIcon/>},
+        {label: 'OCR Online', href: '/invoice', icon: <ReceiptIcon/>},
+        {label: 'Notificaciones', href: '/notification', icon: <NotificationsIcon/>}
 
     ]
 
@@ -67,7 +66,7 @@ export function Layout({children}: { children: React.ReactNode }) {
                     >
                         <Box
                             component="img"
-                            src="/iconos/truestock-logo.svg"
+                            src="/icons/icon-192x192.png"
                             alt="TrueStock"
                             sx={{width: 34, height: 34, display: 'inline-block'}}
                         />
@@ -122,7 +121,7 @@ export function Layout({children}: { children: React.ReactNode }) {
                             variant="rounded"
                             sx={{bgcolor: 'rgba(255,255,255,0.12)', p: 0.5}}
                         >
-                            <Box component="img" src="/iconos/truestock-logo.svg" alt="TS" width={28} height={28}/>
+                            <Box component="img" src="/icons/icon-192x192.png" alt="TS" width={28} height={28}/>
                         </Avatar>
                         <Box sx={{minWidth: 0}}>
                             <Typography variant="subtitle1" fontWeight={700} noWrap>

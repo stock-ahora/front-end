@@ -1,7 +1,7 @@
 'use client'
 
-import Invoice from '@/sections/invoice/view/invoice'
+import InvoiceList from '@/sections/invoice/view/invoiceList'
 
-export default function HomePage() {
-    return <Invoice />
+export default function InvoiceListPage() {
+    return <InvoiceList />
 }
