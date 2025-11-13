@@ -98,12 +98,53 @@ export default function OCRScanPage() {
             setSnack({ open: true, msg: 'Falta archivo o ítems', sev: 'error' })
             return
         }
+
+        console.log({request})
+
+        const movement: MovementsPatch[] = [];
+
+        request?.movements.forEach(mov => {
+          movement.push({
+            id: mov.id,
+            count: mov.count,
+            productId: mov?.productId,
+            typeMovementId: mov.movementTypeId,
+            deleted: mov.deleted || false,
+          });
+        });
+
+        const requestPatch: RequestPatch = {
+          id: request?.id,
+          movements: movement
+        };
+
+
+      try {
+
+        const res = await fetch('https://pr1vz28mok.execute-api.us-east-2.amazonaws.com/prod/api/stock/request', {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Client-Account-Id': '8d1b88f0-e5c7-4670-8bbb-3045f9ab3995',
+          },
+          body: JSON.stringify(requestPatch),
+        })
+        console.log('Save to inventory response status:', res)
+      }catch (error) {
+        console.error('Error saving to inventory:', error);
+        setSnack({ open: true, msg: 'Error al guardar en inventario', sev: 'error' });
+        return;
+      }finally {
         setSaving(true)
         setTimeout(() => {
             setSaving(false)
             setSnack({ open: true, msg: 'Factura guardada en inventario', sev: 'success' })
             resetAll()
-        }, 1000)
+        }, 0)
+      }
+
+
+
     }
 
     return (
@@ -201,13 +242,17 @@ export default function OCRScanPage() {
                                     <TableBody>
                                         {request?.movements.map(it => (
                                             <TableRow key={it.id}>
-                                                <TableCell>
-                                                    <TextField
-                                                        fullWidth
-                                                        size="small"
-                                                        value={it.nombre}
-                                                    />
-                                                </TableCell>
+                                              <TableCell>
+                                                <TextField
+                                                  fullWidth
+                                                  size="small"
+                                                  value={it.nombre}
+                                                  sx={{
+                                                    textDecoration: it.deleted ? 'line-through': 'none',
+                                                    opacity: it.deleted ? 0.6 : 1, // opcional, para que se vea más tenue
+                                                  }}
+                                                />
+                                              </TableCell>
                                                 <TableCell align="right" sx={{ width: 108 }}>
                                                     <TextField
                                                         fullWidth
@@ -233,14 +278,33 @@ export default function OCRScanPage() {
                                                         }}
                                                     />
                                                 </TableCell>
-                                                <TableCell align="center" sx={{ width: 88 }}>
-                                                </TableCell>
+                                              <TableCell align="center" sx={{ width: 88 }}>
+                                                <IconButton color="error" onClick={() => {
+                                                  const deleted = !it.deleted
+
+                                                  setRequest(prev => {
+                                                    if (!prev) return prev             // por si null
+
+                                                    return {
+                                                      ...prev,
+                                                      movements: prev.movements.map(m =>
+                                                        m.id === it.id
+                                                          ? { ...m, deleted: deleted }       // actualizo solo este movimiento
+                                                          : m
+                                                      ),
+                                                    }
+                                                  })
+
+                                                }}>
+                                                  <DeleteIcon />
+                                                </IconButton>
+                                              </TableCell>
                                             </TableRow>
                                         ))}
-                                        {request?.movements.length === 0 && (
+                                        { request?.status === 'rejected' && (
                                             <TableRow>
                                                 <TableCell colSpan={4}>
-                                                    <Box sx={{ py: 4, textAlign: 'center', color: 'text.secondary' }}>Sin datos</Box>
+                                                    <Box sx={{ py: 4, textAlign: 'center', color: 'text.secondary' }}>Solicitud no válida </Box>
                                                 </TableCell>
                                             </TableRow>
                                         )}
@@ -299,10 +363,17 @@ export interface StockRequest {
 export interface Movement {
   id: string;
   nombre: string;
+  movementTypeId: number;
+  productId: string;
   count: number;
+  deleted: boolean;
   created_at: string;   // ISO datetime
   updated_at: string;   // ISO datetime
 }
+
+
+
+
 
 export interface Request {
   id: string;
@@ -313,6 +384,20 @@ export interface Request {
   client_account_id: string;
   movements: Movement[];
 }
+
+export interface MovementsPatch {
+  id: string;            // uuid.UUID → string
+  count: number;
+  productId: string;     // uuid.UUID → string
+  typeMovementId: number;
+  deleted: boolean;
+}
+
+export interface RequestPatch {
+  id: any;                    // uuid.UUID → string
+  movements: MovementsPatch[];   // array de movimientos
+}
+
 
 export function usePollRequest(id: string | null, intervalMs = 3000, loadingSetter?: (loading: boolean) => void) {
   const [request, setRequest] = useState<Request>();
@@ -333,7 +418,7 @@ export function usePollRequest(id: string | null, intervalMs = 3000, loadingSett
         setRequest(resultObject);
 
         // 👇 Cortar polling si ya pasó a otro estado
-        if (resultObject.movements.length !== 0) {
+        if (resultObject.movements.length !== 0 || resultObject.status === 'rejected') {
           if (timer.current) clearInterval(timer.current);
           loadingSetter?.(false);
         }
