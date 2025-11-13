@@ -226,7 +226,7 @@ export default function ReportsPage() {
                             <Grid container spacing={2.5}>
                                 <Grid item xs={12}>
                                     <Typography variant="h6" sx={{ mb: 2 }}>
-                                        Productos en el tiempo
+                                        Solicitudes en el tiempo
                                     </Typography>
                                 </Grid>
 
@@ -253,7 +253,7 @@ export default function ReportsPage() {
                             <Grid container spacing={2.5}>
                                 <Grid item xs={12}>
                                     <Typography variant="h6" sx={{ mb: 2 }}>
-                                        Ingresos vs Egresos
+                                        Solicitudes Ingresos vs Egresos
                                     </Typography>
                                 </Grid>
 
@@ -323,66 +323,6 @@ export default function ReportsPage() {
                     </Grid>
 
                     <Grid item xs={12}>
-                        <Card sx={{ p: { xs: 1.75, md: 2.25 }, borderRadius: 4 }}>
-                            <Typography variant="subtitle2" sx={{ mb: 1.25 }}>
-                                Tabla detalle
-                            </Typography>
-
-                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ mb: 1.25 }}>
-                                <TextField
-                                    placeholder="Filtrar producto"
-                                    value={filters.producto}
-                                    onChange={e => {
-                                        setFilters(s => ({ ...s, producto: e.target.value }))
-                                        setPage(0)
-                                    }}
-                                    fullWidth
-                                />
-                                <TextField
-                                    placeholder="Filtrar categoría"
-                                    value={filters.categoria}
-                                    onChange={e => {
-                                        setFilters(s => ({ ...s, categoria: e.target.value }))
-                                        setPage(0)
-                                    }}
-                                    fullWidth
-                                />
-                            </Stack>
-
-                            <TableContainer
-                                sx={{
-                                    maxHeight: 460,
-                                    borderRadius: 2,
-                                    border: '1px solid rgba(0,0,0,0.06)',
-                                    overflowX: 'auto'
-                                }}
-                            >
-                                <Table stickyHeader size="small" sx={{ minWidth: 680 }}>
-                                    <TableHead>
-                                        <TableRow>
-                                            <TableCell>Producto</TableCell>
-                                            <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
-                                                Categoría
-                                            </TableCell>
-                                            <TableCell align="right">Cantidad</TableCell>
-                                            <TableCell align="right">Costo</TableCell>
-                                            <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
-                                                Fecha
-                                            </TableCell>
-                                        </TableRow>
-                                    </TableHead>
-                                    <TableBody />
-                                </Table>
-                            </TableContainer>
-
-                            <Divider sx={{ my: 1.5 }} />
-
-                            <Stack
-                                direction={{ xs: 'column', sm: 'row' }}
-                                spacing={1}
-                                justifyContent="center"
-                            />
-                        </Card>
                     </Grid>
                 </Grid>
 
