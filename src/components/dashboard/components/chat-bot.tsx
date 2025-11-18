@@ -38,7 +38,7 @@ export default function ChatbotWidget() {
   }, [])
 
   // transformamos para crear label único (como countries)
-  const options = productos.map(p => ({
+  const options = productos?.map(p => ({
     id: p.id,
     name: p.name,
     stock: p.stock,

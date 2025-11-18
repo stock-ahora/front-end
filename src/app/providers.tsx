@@ -10,6 +10,8 @@ import { Layout } from '@/components/layouts'
 import { CssBaseline, ThemeProvider } from '@mui/material'
 import theme from '@/themes/theme'
 import { AuthProvider } from '@/auth/AuthProvider'
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 
 
 export default function Providers({ children }: { children: React.ReactNode }) {
@@ -32,7 +34,10 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           <AuthProvider>
 
             <Layout>
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
               <div>{children}</div>
+              </LocalizationProvider>
+
             </Layout>
           </AuthProvider>
 

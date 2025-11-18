@@ -37,6 +37,8 @@ import { alpha } from '@mui/material/styles'
 import { BarChart } from '@mui/x-charts/BarChart'
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 import { LineChart, PieChart } from '@mui/x-charts'
+import { DateRangePicker } from '@mui/x-date-pickers-pro/DateRangePicker';
+import dayjs from 'dayjs'
 
 type ReportKind = 'quiebres' | 'rotacion' | 'aging' | 'valorizacion' | 'facturas' | 'sla'
 type ChartKind = 'bar' | 'line' | 'pie'
@@ -48,7 +50,8 @@ type ProductoTop = {
 }
 
 type OverTimeProduct = {
-    fecha: string
+  periodo: string
+  mes: string
     ingresos: number
     egresos: number
 }
@@ -61,6 +64,11 @@ type summaryForClient = {
 type stockTrend = {
     fecha: string
     stock_acumulado: number
+}
+
+type product = {
+    id: string
+    name: string
 }
 
 function useContainerWidth() {
@@ -93,7 +101,9 @@ export default function ReportsPage() {
     const [page, setPage] = useState(0)
     const [rowsPerPage, setRowsPerPage] = useState(5)
     const clientId = '8d1b88f0-e5c7-4670-8bbb-3045f9ab3995'
-
+  const [rangoFechas, setRangoFechas] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null]>([null, null])
+    const [date, setDate] = useState<dayjs.Dayjs | null>(null)
+  const [kindDate, setKindDate] = useState<'month' | 'week' | ''>('')
     const topColumns = [
         { field: 'nombre_producto', headerName: 'Producto', flex: 1 },
         { field: 'unidades', headerName: 'Unidades', width: 120 }
@@ -103,6 +113,8 @@ export default function ReportsPage() {
     const [productosOverTime, setProductosOverTime] = useState<OverTimeProduct[]>([])
     const [summary, setSummary] = useState<summaryForClient>({ ingresos: 0, egresos: 0 })
     const [stockTrends, setStockTrends] = useState<stockTrend[]>([])
+  const [products, setProducts] = useState<product[]>([])
+    const [productId, setProductId] = useState<string>('')
 
     useEffect(() => {
         if (!clientId) return
@@ -116,7 +128,14 @@ export default function ReportsPage() {
                 const topProducts: ProductoTop[] = await resTop.json()
                 setProductos(topProducts)
 
-                const resMove = await fetch(`${baseUrl}?typeRequet=movementOverTime`, { headers })
+              const respProducts = await fetch(`https://pr1vz28mok.execute-api.us-east-2.amazonaws.com/prod/api/v1/dashboard/get-product`, { headers })
+
+              const productsObjet: product[] = await respProducts.json()
+
+              setProducts(productsObjet)
+              console.log('Fetched products:', productsObjet)
+
+                const resMove = await fetch(`${baseUrl}?typeRequet=movementOverTime&start=${encodeURIComponent("2024-02-01")}&end=${encodeURIComponent("2024-12-31")}&period=month`, { headers })
                 const movementOverTime: OverTimeProduct[] = await resMove.json()
                 setProductosOverTime(movementOverTime)
 
@@ -135,17 +154,83 @@ export default function ReportsPage() {
         fetchData()
     }, [clientId])
 
+  useEffect(() => {
+    const fetchData = async () => {
+    const baseUrl = 'https://pr1vz28mok.execute-api.us-east-2.amazonaws.com/prod/api/v1/dashboard'
+    const headers = { 'X-Client-Account-Id': clientId }
+      const start = rangoFechas[0]?.format('YYYY-MM-DD') ?? '2025-01-01'
+      const end = rangoFechas[1]?.format('YYYY-MM-DD') ?? '2026-01-01'
+      const resTop = await fetch(`${baseUrl}?typeRequet=topProducts&start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`, { headers })
+    const topProducts: ProductoTop[] = await resTop.json()
+    setProductos(topProducts)
+    }
+
+    if(rangoFechas[0] && rangoFechas[1]){
+      console.log('rangoFechas changed:', rangoFechas)
+      fetchData()
+    }
+  }, [rangoFechas])
+
+  useEffect(() => {
+
+    console.log('Filters changed:', { kindDate, date, productId })
+    const fetchData = async () => {
+
+      let url = ''
+      const baseUrl = 'https://pr1vz28mok.execute-api.us-east-2.amazonaws.com/prod/api/v1/dashboard?typeRequet=movementOverTime'
+      const headers = { 'X-Client-Account-Id': clientId }
+
+      if (kindDate === 'week' && date) {
+        const start = date.startOf('month').format('YYYY-MM-DD');
+        const end = date.endOf('month').format('YYYY-MM-DD');
+
+        url = `${baseUrl}&start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}&period=${kindDate}`;
+      }
+
+      if (kindDate === 'month' && date) {
+        const start = date.startOf('year').format('YYYY-MM-DD');
+        const end = date.endOf('year').format('YYYY-MM-DD');
+
+        url = `${baseUrl}&start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}&period=${kindDate}`;
+      }
+
+      if(productId){
+
+        let urladd = url === '' ? baseUrl + `&productoId=${encodeURIComponent(productId)}&start=${encodeURIComponent("2024-02-01")}&end=${encodeURIComponent("2024-12-31")}&period=month` : `&productoId=${encodeURIComponent(productId)}`
+
+        console.log({urladd})
+
+        url += urladd
+      }
+
+      console.log('Constructed URL:', url)
+      const resMove = await fetch(`${url}`, { headers })
+
+      const movementOverTime: OverTimeProduct[] = await resMove.json()
+      setProductosOverTime(movementOverTime)
+
+    }
+
+    fetchData()
+  }, [kindDate, date, productId])
+
     const chartData = useMemo(() => {
-        return productosOverTime.length !== 0
-            ? productosOverTime.map(d => ({
-                x: d.fecha.slice(0, 10),
+
+      console.log("test", productosOverTime?.length !== 0)
+
+      return productosOverTime?.length !== 0
+            ? productosOverTime.map((d, index) => ({
+
+                x: kindDate === 'week' && date ? `Semana ${dayjs(d.periodo).week()} / ${dayjs(d.periodo).format("MMMM")}` : d?.mes?.slice(0, 10),
                 ingresos: Number(d.ingresos ?? 0),
                 egresos: Number(d.egresos ?? 0)
             }))
             : []
     }, [productosOverTime])
 
-    return (
+    // @ts-ignore
+  // @ts-ignore
+  return (
         <Box
             sx={{
                 minHeight: '100vh',
@@ -203,20 +288,78 @@ export default function ReportsPage() {
                             <Grid container spacing={2.5}>
                                 <Grid item xs={12}>
                                     <Typography variant="h6" sx={{ mb: 2 }}>
-                                        Productos más vendidos
+                                        Top 7 productos con más movimientos
                                     </Typography>
                                 </Grid>
-
+                              <Grid item xs={12}>
+                                <Box sx={{ display: 'flex', gap: 2 }}>
+                                  <TextField
+                                    label="Desde"
+                                    type="date"
+                                    value={rangoFechas[0]?.format('YYYY-MM-DD')}
+                                    onChange={(e) => setRangoFechas([dayjs(e.target.value), rangoFechas[1]])}
+                                    InputLabelProps={{ shrink: true }}
+                                  />
+                                  <TextField
+                                    label="Hasta"
+                                    type="date"
+                                    value={rangoFechas[1]?.format('YYYY-MM-DD')}
+                                    onChange={(e) => {
+                                      const newDate = dayjs(e.target.value)
+                                      if (newDate.isBefore(rangoFechas[0], 'day')) {
+                                        setRangoFechas([newDate, newDate])
+                                      } else {
+                                        setRangoFechas([rangoFechas[0], newDate])
+                                      }
+                                    }}
+                                    InputLabelProps={{ shrink: true }}
+                                  />
+                                </Box>
+                              </Grid>
                                 <Grid item xs={12}>
                                     <Box ref={barBox.ref} sx={{ width: '100%' }}>
-                                        {barBox.width > 0 && (
-                                            <BarChart
-                                                width={barBox.width}
-                                                height={barBox.width < 600 ? 260 : 400}
-                                                xAxis={[{ data: productos?.map(p => p?.nombre_producto) }]}
-                                                series={[{ data: productos?.map(p => p?.unidades) }]}
-                                            />
-                                        )}
+                                      {Array.isArray(productos) && productos.length > 0 && (
+                                        <BarChart
+                                          height={barBox.width < 600 ? 260 : 400}
+                                          dataset={productos?.map((p, i) => ({
+                                            ...p,
+                                            idx: p.nombre_producto,
+                                          }))}
+                                          yAxis={[{
+                                            scaleType: 'band',
+                                            dataKey: 'idx',
+                                            width: 100,  // <–– espacio fijo para los nombres
+
+                                          }]}
+                                          xAxis={[
+                                            {
+                                              label: 'Cantidad de movimientos',
+                                            },
+                                          ]}
+                                          series={[
+                                            {
+                                              dataKey: 'ingresos',
+                                              label: 'Ingresos',
+                                              stack: 'total',
+                                              color: '#4CAF50',
+                                            },
+                                            {
+                                              dataKey: 'egresos',
+                                              label: 'Egresos',
+                                              stack: 'total',
+                                              color: '#F5C242',
+                                            },
+                                          ]}
+                                          slotProps={{
+                                            legend: {
+                                              position: { vertical: 'top', horizontal: 'center' },
+                                            },
+                                          }}
+                                          layout="horizontal"
+                                        />
+
+                                      )}
+
                                     </Box>
                                 </Grid>
                             </Grid>
@@ -229,6 +372,94 @@ export default function ReportsPage() {
                                         Solicitudes en el tiempo
                                     </Typography>
                                 </Grid>
+                                <Grid item xs={12}>
+                                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
+                                    <TextField
+                                      select
+                                      label="Producto"
+                                      value={filters.producto}
+                                      onChange={(e) => {
+                                        console.log(e.target.value)
+                                        setProductId(e.target.value)
+                                      setFilters(s => ({ ...s, producto: e.target.value }))}}
+                                      sx={{ minWidth: 240 }}
+                                    >
+                                      {Array.isArray(products) && products.map(p => (
+                                        <MenuItem key={p.id} value={p.id}>
+                                          {p.name}
+                                        </MenuItem>
+                                      ))}
+                                    </TextField>
+
+                                    <TextField
+                                      select
+                                      label="Periodo"
+                                      value={filters.categoria}
+                                      onChange={(e) => {
+                                        console.log("value" + e.target.value)
+                                        const kindStr = e.target.value === "Años"? 'month' : 'week'
+                                        console.log(kindStr)
+                                        setKindDate(kindStr)
+                                        setFilters(s => ({ ...s, categoria: e.target.value }))
+                                      }}
+                                      sx={{ width: 160 }}
+                                    >
+                                      <MenuItem value="Años">Años</MenuItem>
+                                      <MenuItem value="Semanas">Semanas</MenuItem>
+                                    </TextField>
+
+                                    {filters.categoria === 'Años' && (
+                                      <TextField
+                                        select
+                                        label="Año"
+                                        value={to}
+                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                          setTo(e.target.value)
+                                          const year = e.target.value
+                                          setDate(dayjs(`${year}-01-01`))
+                                        }}
+                                        sx={{ width: 140 }}
+                                      >
+                                        {((any) => {
+                                          const start = 2024
+                                          const end = dayjs().year()
+                                          return Array.from({ length: end - start + 1 }, (_, i) => start + i).map(y => (
+                                            <MenuItem key={y} value={String(y)}>{String(y)}</MenuItem>
+                                          ))
+                                        })()}
+                                      </TextField>
+                                    )}
+
+                                    {filters.categoria === 'Semanas' && (
+                                      <TextField
+                                        select
+                                        label="Mes (desde 2024)"
+                                        value={to}
+                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                          setTo(e.target.value)
+                                          const val = e.target.value // formato 'YYYY-MM'
+                                          setDate(dayjs(`${val}-01`))
+                                        }}
+                                        sx={{ minWidth: 180 }}
+                                      >
+                                        {(() => {
+                                          const items = []
+                                          let cur = dayjs('2024-01-01')
+                                          const end = dayjs()
+                                          while (cur.isBefore(end) || cur.isSame(end, 'month')) {
+                                            items.push(cur)
+                                            cur = cur.add(1, 'month')
+                                          }
+                                          return items.map(m => (
+                                            <MenuItem key={m.format('YYYY-MM')} value={m.format('YYYY-MM')}>
+                                              {m.format('MMMM YYYY')}
+                                            </MenuItem>
+                                          ))
+                                        })()}
+                                      </TextField>
+                                    )}
+                                  </Stack>
+                                </Grid>
 
                                 <Grid item xs={12}>
                                     <Box ref={lineOverTimeBox.ref} sx={{ width: '100%' }}>
@@ -240,7 +471,7 @@ export default function ReportsPage() {
                                                 xAxis={[{ dataKey: 'x', label: 'Fecha', scaleType: 'band' }]}
                                                 series={[
                                                     { id: 'Ingresos', dataKey: 'ingresos', label: 'Ingresos', color: '#4CAF50' },
-                                                    { id: 'Egresos', dataKey: 'egresos', label: 'Egresos', color: '#F44336' }
+                                                    { id: 'Egresos', dataKey: 'egresos', label: 'Egresos', color: '#F5C242' }
                                                 ]}
                                             />
                                         )}
@@ -249,77 +480,7 @@ export default function ReportsPage() {
                             </Grid>
                         </Card>
 
-                        <Card sx={{ p: { xs: 1.75, md: 2.25 }, borderRadius: 4, mb: 4 }}>
-                            <Grid container spacing={2.5}>
-                                <Grid item xs={12}>
-                                    <Typography variant="h6" sx={{ mb: 2 }}>
-                                        Solicitudes Ingresos vs Egresos
-                                    </Typography>
-                                </Grid>
 
-                                <Grid item xs={12}>
-                                    <Box
-                                        ref={pieBox.ref}
-                                        sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}
-                                    >
-                                        {pieBox.width > 0 && (
-                                            <PieChart
-                                                series={[
-                                                    {
-                                                        data: [
-                                                            {
-                                                                id: 'Ingresos',
-                                                                value: summary.ingresos,
-                                                                label: `Ingresos (${summary.ingresos})`
-                                                            },
-                                                            {
-                                                                id: 'Egresos',
-                                                                value: summary.egresos,
-                                                                label: `Egresos (${summary.egresos})`
-                                                            }
-                                                        ]
-                                                    }
-                                                ]}
-                                                width={Math.min(pieBox.width, 400)}
-                                                height={pieBox.width < 400 ? 260 : 300}
-                                            />
-                                        )}
-                                    </Box>
-                                </Grid>
-                            </Grid>
-                        </Card>
-
-                        <Card sx={{ p: { xs: 1.75, md: 2.25 }, borderRadius: 4, mb: 4 }}>
-                            <Grid container spacing={2.5}>
-                                <Grid item xs={12}>
-                                    <Typography variant="h6" sx={{ mb: 2 }}>
-                                        Tendencia de stock
-                                    </Typography>
-                                </Grid>
-
-                                <Grid item xs={12}>
-                                    <Box ref={stockBox.ref} sx={{ width: '100%' }}>
-                                        {stockBox.width > 0 && (
-                                            <LineChart
-                                                dataset={stockTrends}
-                                                xAxis={[{ dataKey: 'fecha', label: 'Fecha', scaleType: 'band' }]}
-                                                series={[
-                                                    {
-                                                        id: 'Stock acumulado',
-                                                        dataKey: 'stock_acumulado',
-                                                        label: 'Stock acumulado',
-                                                        area: true,
-                                                        color: '#1976d2'
-                                                    }
-                                                ]}
-                                                width={stockBox.width}
-                                                height={stockBox.width < 600 ? 260 : 400}
-                                            />
-                                        )}
-                                    </Box>
-                                </Grid>
-                            </Grid>
-                        </Card>
                     </Grid>
 
                     <Grid item xs={12}>
