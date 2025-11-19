@@ -213,8 +213,8 @@ export default function ReportsPage() {
       console.log('Constructed URL:', url)
       const resMove = await fetch(`${url}`, { headers })
       console.log({resMove})
-      console.log(resMove !== null)
       const movementOverTime: OverTimeProduct[] = await resMove.json()
+      console.log({movementOverTime})
       if (movementOverTime !== null && movementOverTime.length > 0) {
       setProductosOverTime(movementOverTime)
       }else {
@@ -233,7 +233,7 @@ export default function ReportsPage() {
       return productosOverTime?.length !== 0
             ? productosOverTime?.map((d, index) => ({
 
-                x: kindDate === 'week' && date ? dayjs.utc(d.periodo).format("D ddd MMM") : d?.mes?.slice(0, 10),
+                x: kindDate === 'week' && date ? dayjs.utc(d.periodo).format("D ddd MMM") : d?.mes?.slice(0, 3),
                 ingresos: Number(d.ingresos ?? 0),
                 egresos: Number(d.egresos ?? 0)
             }))
@@ -474,31 +474,26 @@ export default function ReportsPage() {
                                 </Grid>
 
                                 <Grid item xs={12}>
-                                    <Box ref={lineOverTimeBox.ref} sx={{ width: '100%' }}>
-                                        {lineOverTimeBox.width > 0 && (
-                                            <LineChart
-                                                width={lineOverTimeBox.width}
-                                                height={lineOverTimeBox.width < 600 ? 260 : 400}
-                                                dataset={chartData}
-                                                xAxis={[
-                                                  {
-                                                    dataKey: 'x',
-                                                    label: 'Fecha',
-                                                    scaleType: 'band',
-                                                    tickLabelStyle: {
-                                                      angle: barBox.width < 600 ? -45 : 0,
-                                                      textAnchor: barBox.width < 600 ? 'end' : 'middle',
-                                                      fontSize: barBox.width < 600 ? 10 : 12,
-                                                    },
-                                                  },
-                                                ]}
-                                                series={[
-                                                    { id: 'Ingresos', dataKey: 'ingresos', label: 'Ingresos', color: '#4CAF50' },
-                                                    { id: 'Egresos', dataKey: 'egresos', label: 'Egresos', color: '#F5C242' }
-                                                ]}
-                                            />
-                                        )}
+                                  <Box sx={{ width: '100%', overflowX: 'auto', pb: 2 }}>
+                                    <Box sx={{ minWidth: 650 }}>
+                                      <LineChart
+                                        height={lineOverTimeBox.width < 600 ? 300 : 420}
+                                        dataset={chartData}
+                                        xAxis={[
+                                          {
+                                            dataKey: 'x',
+                                            label: 'Fecha',
+                                            scaleType: 'band',
+                                          }
+                                        ]}
+                                        series={[
+                                          { id: 'Ingresos', dataKey: 'ingresos', label: 'Ingresos', color: '#4CAF50' },
+                                          { id: 'Egresos', dataKey: 'egresos', label: 'Egresos', color: '#F5C242' }
+                                        ]}
+                                        margin={{ top: 40, right: 20, bottom: 70, left: 50 }}
+                                      />
                                     </Box>
+                                  </Box>
                                 </Grid>
                             </Grid>
                         </Card>
