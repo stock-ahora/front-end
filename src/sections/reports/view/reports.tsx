@@ -39,10 +39,17 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 import { LineChart, PieChart } from '@mui/x-charts'
 import { DateRangePicker } from '@mui/x-date-pickers-pro/DateRangePicker';
 import dayjs from 'dayjs'
+import 'dayjs/locale/es';
+import isoWeek from 'dayjs/plugin/isoWeek';
+import utc from "dayjs/plugin/utc";
+
 
 type ReportKind = 'quiebres' | 'rotacion' | 'aging' | 'valorizacion' | 'facturas' | 'sla'
 type ChartKind = 'bar' | 'line' | 'pie'
 type Row = { producto: string; categoria: string; cantidad: number; costo: number; fecha: string }
+dayjs.extend(utc);
+dayjs.extend(isoWeek);
+dayjs.locale("es");
 
 type ProductoTop = {
     nombre_producto: string
@@ -196,7 +203,7 @@ export default function ReportsPage() {
 
       if(productId){
 
-        let urladd = url === '' ? baseUrl + `&productoId=${encodeURIComponent(productId)}&start=${encodeURIComponent("2024-02-01")}&end=${encodeURIComponent("2024-12-31")}&period=month` : `&productoId=${encodeURIComponent(productId)}`
+        let urladd = url === '' ? baseUrl + `&productoId=${encodeURIComponent(productId)}&start=${encodeURIComponent("2024-01-01")}&end=${encodeURIComponent("2024-12-31")}&period=month` : `&productoId=${encodeURIComponent(productId)}`
 
         console.log({urladd})
 
@@ -205,9 +212,14 @@ export default function ReportsPage() {
 
       console.log('Constructed URL:', url)
       const resMove = await fetch(`${url}`, { headers })
-
+      console.log({resMove})
+      console.log(resMove !== null)
       const movementOverTime: OverTimeProduct[] = await resMove.json()
+      if (movementOverTime !== null && movementOverTime.length > 0) {
       setProductosOverTime(movementOverTime)
+      }else {
+        setProductosOverTime([])
+      }
 
     }
 
@@ -219,9 +231,9 @@ export default function ReportsPage() {
       console.log("test", productosOverTime?.length !== 0)
 
       return productosOverTime?.length !== 0
-            ? productosOverTime.map((d, index) => ({
+            ? productosOverTime?.map((d, index) => ({
 
-                x: kindDate === 'week' && date ? `Semana ${dayjs(d.periodo).week()} / ${dayjs(d.periodo).format("MMMM")}` : d?.mes?.slice(0, 10),
+                x: kindDate === 'week' && date ? dayjs.utc(d.periodo).format("D ddd MMM") : d?.mes?.slice(0, 10),
                 ingresos: Number(d.ingresos ?? 0),
                 egresos: Number(d.egresos ?? 0)
             }))
@@ -468,7 +480,18 @@ export default function ReportsPage() {
                                                 width={lineOverTimeBox.width}
                                                 height={lineOverTimeBox.width < 600 ? 260 : 400}
                                                 dataset={chartData}
-                                                xAxis={[{ dataKey: 'x', label: 'Fecha', scaleType: 'band' }]}
+                                                xAxis={[
+                                                  {
+                                                    dataKey: 'x',
+                                                    label: 'Fecha',
+                                                    scaleType: 'band',
+                                                    tickLabelStyle: {
+                                                      angle: barBox.width < 600 ? -45 : 0,
+                                                      textAnchor: barBox.width < 600 ? 'end' : 'middle',
+                                                      fontSize: barBox.width < 600 ? 10 : 12,
+                                                    },
+                                                  },
+                                                ]}
                                                 series={[
                                                     { id: 'Ingresos', dataKey: 'ingresos', label: 'Ingresos', color: '#4CAF50' },
                                                     { id: 'Egresos', dataKey: 'egresos', label: 'Egresos', color: '#F5C242' }
