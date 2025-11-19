@@ -34,9 +34,9 @@ import {
     Tooltip
 } from '@mui/material'
 import { alpha } from '@mui/material/styles'
-import { BarChart } from '@mui/x-charts/BarChart'
+import { BarChart, BarPlot } from '@mui/x-charts/BarChart'
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
-import { LineChart, PieChart } from '@mui/x-charts'
+import { ChartContainer, ChartsXAxis, ChartsYAxis, LineChart, PieChart, ScatterPlot } from '@mui/x-charts'
 import { DateRangePicker } from '@mui/x-date-pickers-pro/DateRangePicker';
 import dayjs from 'dayjs'
 import 'dayjs/locale/es';
@@ -50,6 +50,31 @@ type Row = { producto: string; categoria: string; cantidad: number; costo: numbe
 dayjs.extend(utc);
 dayjs.extend(isoWeek);
 dayjs.locale("es");
+
+const bullets = [
+  {
+    label: 'Variable 1',
+    max: 300,
+    ranges: [150, 250, 300],        // fondo gris claro → gris medio → gris oscuro
+    value: 230,                     // barra azul
+    target: 260,                    // marca vertical
+  },
+  {
+    label: 'Variable 2',
+    max: 30,
+    ranges: [15, 25, 30],
+    value: 22,
+    target: 26,
+  },
+  {
+    label: 'Variable 3',
+    max: 600,
+    ranges: [300, 500, 600],
+    value: 440,
+    target: 530,
+  },
+];
+
 
 type ProductoTop = {
     nombre_producto: string
@@ -243,6 +268,7 @@ export default function ReportsPage() {
     // @ts-ignore
   // @ts-ignore
   // @ts-ignore
+  // @ts-ignore
   return (
         <Box
             sx={{
@@ -382,7 +408,7 @@ export default function ReportsPage() {
                             <Grid container spacing={2.5}>
                                 <Grid item xs={12}>
                                     <Typography variant="h6" sx={{ mb: 2 }}>
-                                        Solicitudes en el tiempo
+                                        Entradas y salidas de un producto en el tiempo
                                     </Typography>
                                 </Grid>
                                 <Grid item xs={12}>
@@ -485,11 +511,38 @@ export default function ReportsPage() {
                                             dataKey: 'x',
                                             label: 'Fecha',
                                             scaleType: 'band',
-                                          }
+                                          },
                                         ]}
                                         series={[
-                                          { id: 'Ingresos', dataKey: 'ingresos', label: 'Ingresos', color: '#4CAF50' },
-                                          { id: 'Egresos', dataKey: 'egresos', label: 'Egresos', color: '#F5C242' }
+                                          {
+                                            id: 'Ingresos',
+                                            dataKey: 'ingresos',
+                                            label: 'Ingresos',
+                                            color: '#4CAF50',
+                                            showMark: true,
+                                            valueFormatter: (value) =>
+                                              value == null ? '' : value.toLocaleString('es-CL'),
+                                          },
+                                          {
+                                            id: 'Egresos',
+                                            dataKey: 'egresos',
+                                            // Cambiamos SOLO el label dentro del tooltip
+                                            label: (location) =>
+                                              location === 'tooltip' ? 'Egresos' : 'Egresos',
+                                            color: '#F5C242',
+                                            showMark: true,
+                                            valueFormatter: (value, context) => {
+                                              if (value == null) return '';
+
+                                              const row = chartData[context.dataIndex]; // misma posición en el dataset
+                                              const ingresos = row?.ingresos ?? 0;
+                                              const egresos = row?.egresos ?? 0;
+                                              const total = ingresos - egresos;
+
+                                              // Lo que se verá en la fila de "Egresos" del tooltip
+                                              return `${egresos.toLocaleString('es-CL')} (    Total ${total.toLocaleString('es-CL')})`;
+                                            },
+                                          },
                                         ]}
                                         margin={{ top: 40, right: 20, bottom: 70, left: 50 }}
                                       />
