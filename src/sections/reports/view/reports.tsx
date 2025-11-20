@@ -86,6 +86,7 @@ type OverTimeProduct = {
   mes: string
     ingresos: number
     egresos: number
+  stock_acumulado: number
 }
 
 type summaryForClient = {
@@ -140,6 +141,7 @@ export default function ReportsPage() {
         { field: 'nombre_producto', headerName: 'Producto', flex: 1 },
         { field: 'unidades', headerName: 'Unidades', width: 120 }
     ]
+  const [viewMode, setViewMode] = useState<'both' | 'ingresos' | 'egresos'>('egresos');
 
     const [productos, setProductos] = useState<ProductoTop[]>([])
     const [productosOverTime, setProductosOverTime] = useState<OverTimeProduct[]>([])
@@ -148,7 +150,22 @@ export default function ReportsPage() {
   const [products, setProducts] = useState<product[]>([])
     const [productId, setProductId] = useState<string>('')
 
-    useEffect(() => {
+  const series = [
+    viewMode !== 'egresos' && {
+      dataKey: 'ingresos',
+      label: 'Ingresos',
+      stack: 'total',
+      color: '#4CAF50',
+    },
+    viewMode !== 'ingresos' && {
+      dataKey: 'egresos',
+      label: 'Egresos',
+      stack: 'total',
+      color: '#F5C242',
+    },
+  ].filter(Boolean);
+
+  useEffect(() => {
         if (!clientId) return
 
         const fetchData = async () => {
@@ -260,12 +277,14 @@ export default function ReportsPage() {
 
                 x: kindDate === 'week' && date ? dayjs.utc(d.periodo).format("D ddd MMM") : d?.mes?.slice(0, 3),
                 ingresos: Number(d.ingresos ?? 0),
-                egresos: Number(d.egresos ?? 0)
+                egresos: Number(d.egresos ?? 0),
+                stock_acumulado: Number(d.stock_acumulado ?? 0)
             }))
             : []
     }, [productosOverTime])
 
     // @ts-ignore
+  // @ts-ignore
   // @ts-ignore
   // @ts-ignore
   // @ts-ignore
@@ -353,7 +372,71 @@ export default function ReportsPage() {
                                     }}
                                     InputLabelProps={{ shrink: true }}
                                   />
+
+                                  <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+                                    <ToggleButtonGroup
+                                      value={viewMode}
+                                      exclusive
+                                      onChange={(_, v) => v && setViewMode(v)}
+                                      size="small"
+                                    >
+                                      <ToggleButton
+                                        value="ingresos"
+                                        sx={{
+                                          color: '#4CAF50',
+                                          borderColor: '#4CAF50',
+                                          '&.Mui-selected': {
+                                            backgroundColor: 'rgba(76, 175, 80, 0.15)',
+                                            color: '#4CAF50',
+                                          },
+                                          '&:hover': {
+                                            backgroundColor: 'rgba(76, 175, 80, 0.10)',
+                                          },
+                                        }}
+                                      >
+                                        Ingresos
+                                      </ToggleButton>
+
+                                      <ToggleButton
+                                        value="egresos"
+                                        sx={{
+                                          color: '#F5C242',
+                                          borderColor: '#F5C242',
+                                          '&.Mui-selected': {
+                                            backgroundColor: 'rgba(245, 194, 66, 0.20)',
+                                            color: '#F5C242',
+                                          },
+                                          '&:hover': {
+                                            backgroundColor: 'rgba(245, 194, 66, 0.10)',
+                                          },
+                                        }}
+                                      >
+                                        Egresos
+                                      </ToggleButton>
+
+                                      <ToggleButton
+                                        value="both"
+                                        sx={{
+                                          color: '#1976d2',
+                                          borderColor: '#1976d2',
+                                          '&.Mui-selected': {
+                                            backgroundColor: 'rgba(25, 118, 210, 0.15)',
+                                            color: '#1976d2',
+                                          },
+                                          '&:hover': {
+                                            backgroundColor: 'rgba(25, 118, 210, 0.10)',
+                                          },
+                                        }}
+                                      >
+                                        Ambos
+                                      </ToggleButton>
+                                    </ToggleButtonGroup>
+                                  </Stack>
+
+
                                 </Box>
+
+
                               </Grid>
                                 <Grid item xs={12}>
                                     <Box ref={barBox.ref} sx={{ width: '100%' }}>
@@ -375,20 +458,7 @@ export default function ReportsPage() {
                                               label: 'Cantidad de movimientos',
                                             },
                                           ]}
-                                          series={[
-                                            {
-                                              dataKey: 'ingresos',
-                                              label: 'Ingresos',
-                                              stack: 'total',
-                                              color: '#4CAF50',
-                                            },
-                                            {
-                                              dataKey: 'egresos',
-                                              label: 'Egresos',
-                                              stack: 'total',
-                                              color: '#F5C242',
-                                            },
-                                          ]}
+                                          series={series}
                                           slotProps={{
                                             legend: {
                                               position: { vertical: 'top', horizontal: 'center' },
@@ -544,6 +614,35 @@ export default function ReportsPage() {
                                             },
                                           },
                                         ]}
+                                        margin={{ top: 40, right: 20, bottom: 70, left: 50 }}
+                                      />
+                                    </Box>
+                                    <Box sx={{ minWidth: 650 }}>
+                                      <LineChart
+                                        height={lineOverTimeBox.width < 600 ? 300 : 420}
+                                        dataset={chartData}
+                                        xAxis={[
+                                          {
+                                            dataKey: 'x',
+                                            label: 'Fecha',
+                                            scaleType: 'band',
+                                          },
+                                        ]}
+                                        series={[
+                                          {
+                                            id: 'Stock',
+                                            dataKey: 'stock_acumulado',
+                                            label: 'Stock acumulado',
+                                            color: '#1976D2',
+                                            showMark: true,
+                                            curve: 'linear',
+                                            valueFormatter: (value) =>
+                                              value == null ? '' : value.toLocaleString('es-CL'),
+                                          },
+                                        ]}
+                                        slotProps={{
+                                          legend: { position: { vertical: 'top', horizontal: 'center' } }
+                                        }}
                                         margin={{ top: 40, right: 20, bottom: 70, left: 50 }}
                                       />
                                     </Box>
