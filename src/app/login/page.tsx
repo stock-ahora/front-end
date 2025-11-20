@@ -1,34 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Box, Button, Paper, Stack, TextField, Typography, Avatar } from '@mui/material'
-import { keyframes } from '@mui/system'
 import { alpha } from '@mui/material/styles'
 import { useAuth } from '@/auth/AuthProvider'
-
-const rotate = keyframes`
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-`
-
-const pulse = keyframes`
-    0% { transform: scale(1); opacity: 0.95; }
-    50% { transform: scale(1.07); opacity: 1; }
-    100% { transform: scale(1); opacity: 0.95; }
-`
 
 export default function LoginPage() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
-    const [isLoading, setIsLoading] = useState(true)
     const { login } = useAuth()
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setIsLoading(false)
-        }, 2000)
-        return () => clearTimeout(timer)
-    }, [])
 
     const handleLogin = () => {
         if (email === '' && password === '') {
@@ -59,78 +39,10 @@ export default function LoginPage() {
         `
             }}
         >
-            {isLoading && (
-                <Box
-                    sx={{
-                        position: 'absolute',
-                        inset: 0,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexDirection: 'column',
-                        gap: 3,
-                        zIndex: 10
-                    }}
-                >
-                    <Box
-                        sx={{
-                            width: 150,
-                            height: 150,
-                            borderRadius: '50%',
-                            position: 'relative',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            animation: `${pulse} 1.6s ease-in-out infinite`
-                        }}
-                    >
-                        <Box
-                            sx={{
-                                position: 'absolute',
-                                inset: -6,
-                                borderRadius: '50%',
-                                border: '4px solid rgba(0,0,0,0.08)',
-                                animation: `${rotate} 2.4s linear infinite`
-                            }}
-                        />
-                        <Box
-                            sx={{
-                                position: 'absolute',
-                                inset: 0,
-                                borderRadius: '50%',
-                                background: 'rgba(255,255,255,0.8)',
-                                boxShadow: '0 18px 45px rgba(0,0,0,0.18)'
-                            }}
-                        />
-                        <Avatar
-                            src="/icon-192x192.png"
-                            sx={{
-                                width: 90,
-                                height: 90,
-                                zIndex: 2
-                            }}
-                        />
-                    </Box>
-
-                    <Typography
-                        variant="subtitle1"
-                        sx={{
-                            color: 'text.primary',
-                            fontWeight: 600,
-                            fontSize: '0.95rem'
-                        }}
-                    >
-                    </Typography>
-                </Box>
-            )}
-
             <Box
                 sx={{
                     width: '100%',
                     maxWidth: 420,
-                    transition: 'opacity 0.6s ease, transform 0.6s ease',
-                    opacity: isLoading ? 0 : 1,
-                    transform: isLoading ? 'translateY(10px)' : 'translateY(0)',
                     zIndex: 5
                 }}
             >
