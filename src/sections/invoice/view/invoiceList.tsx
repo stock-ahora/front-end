@@ -34,6 +34,7 @@ import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 import CloseIcon from '@mui/icons-material/Close'
 import AddIcon from '@mui/icons-material/Add'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { alpha, useTheme } from '@mui/material/styles'
 import { useRouter } from 'next/navigation'
 
@@ -252,6 +253,12 @@ export default function OCRRequestsPage() {
 
     return (
         <Container maxWidth="lg" sx={{ py: 4 }}>
+            <Stack direction="row" alignItems="center" spacing={1.2} sx={{ mb: 1.5 }}>
+                <IconButton onClick={() => router.back()} sx={{ color: 'text.secondary' }}>
+                    <ArrowBackIcon />
+                </IconButton>
+            </Stack>
+
             <Stack
                 direction={{ xs: 'column', sm: 'row' }}
                 alignItems={{ xs: 'stretch', sm: 'center' }}

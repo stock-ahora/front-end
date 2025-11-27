@@ -15,13 +15,16 @@ import {
     MenuItem,
     FormGroup,
     FormControlLabel,
-    Checkbox
+    Checkbox,
+    IconButton
 } from '@mui/material'
 import { alpha } from '@mui/material/styles'
 import TrendingUpIcon from '@mui/icons-material/TrendingUp'
 import WarningAmberIcon from '@mui/icons-material/WarningAmber'
 import InventoryIcon from '@mui/icons-material/Inventory'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { LineChart } from '@mui/x-charts/LineChart'
+import { useRouter } from 'next/navigation'
 
 type ForecastPoint = {
     periodo: string
@@ -67,6 +70,7 @@ const formatPeriodoLabel = (ym: string) => {
 export default function PredictiveModelView() {
     const boxRef = useRef<HTMLDivElement>(null)
     const [width, setWidth] = useState(0)
+    const router = useRouter()
 
     useLayoutEffect(() => {
         if (!boxRef.current) return
@@ -348,6 +352,12 @@ export default function PredictiveModelView() {
                 maxWidth="lg"
                 sx={{ py: { xs: 2.5, md: 4 }, px: { xs: 1.5, sm: 2 } }}
             >
+                <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1.5 }}>
+                    <IconButton onClick={() => router.back()} sx={{ color: '#9e9e9e' }}>
+                        <ArrowBackIcon />
+                    </IconButton>
+                </Stack>
+
                 <Card
                     sx={{
                         p: { xs: 2, md: 3 },

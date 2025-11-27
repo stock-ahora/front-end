@@ -2,17 +2,42 @@
 
 import React from 'react'
 import {
-    Box, Container, Typography, Card, Stack, TextField, InputAdornment, Button, Chip,
-    Table, TableHead, TableRow, TableCell, TableBody, TableContainer, TablePagination,
-    CircularProgress, Select, MenuItem, FormControl, InputLabel, Dialog, DialogTitle,
-    DialogContent, DialogActions, IconButton, Avatar
+    Box,
+    Container,
+    Typography,
+    Card,
+    Stack,
+    TextField,
+    InputAdornment,
+    Button,
+    Chip,
+    Table,
+    TableHead,
+    TableRow,
+    TableCell,
+    TableBody,
+    TableContainer,
+    TablePagination,
+    CircularProgress,
+    Select,
+    MenuItem,
+    FormControl,
+    InputLabel,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    IconButton,
+    Avatar
 } from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search'
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 import AddIcon from '@mui/icons-material/Add'
 import CloseIcon from '@mui/icons-material/Close'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { alpha, useTheme } from '@mui/material/styles'
+import { useRouter } from 'next/navigation'
 
 import { listProducts, createProduct } from '@/services/inventory/api'
 import type { StockProduct } from '@/services/inventory/types'
@@ -56,8 +81,6 @@ const COLORS = {
     dark: '#262626'
 }
 
-
-
 function getStatusMeta(status?: string) {
     const s = String(status ?? '').toUpperCase()
     if (s === 'ACTIVE') return { label: 'Activo', color: 'success' as const }
@@ -84,7 +107,6 @@ function formatShortId(id: string) {
     return id.length > 10 ? `${id.slice(0, 8)}` : id
 }
 
-
 function sortRows(rows: NormalizedItem[], orderBy: keyof NormalizedItem, order: 'asc' | 'desc') {
     return [...rows].sort((a, b) => {
         const va = (a as any)[orderBy]
@@ -106,6 +128,8 @@ function sortRows(rows: NormalizedItem[], orderBy: keyof NormalizedItem, order: 
 }
 
 export default function InventoryPage() {
+    const router = useRouter()
+
     const [rows, setRows] = React.useState<NormalizedItem[]>([])
     const [loading, setLoading] = React.useState(true)
     const [error, setError] = React.useState<string | null>(null)
@@ -140,7 +164,6 @@ export default function InventoryPage() {
                 }
                 const sorted = sortRows(filtered, orderBy, order)
                 if (sorted.length === 0) {
-
                 } else {
                     setRows(sorted)
                     setTotal(sorted.length)
@@ -158,34 +181,56 @@ export default function InventoryPage() {
             }
             const sorted = sortRows(filtered, orderBy, order)
             if ((q || status !== 'Todos') && sorted.length === 0) {
-
             } else if (!q && status === 'Todos' && sorted.length === 0) {
-
             } else {
                 setRows(sorted)
                 setTotal(q || status !== 'Todos' ? sorted.length : resp.total)
             }
         } catch (e: any) {
-
         } finally {
             setLoading(false)
         }
     }
 
-    React.useEffect(() => { fetchPage(0, rowsPerPage) }, [])
-    React.useEffect(() => { fetchPage(page, rowsPerPage) }, [page, rowsPerPage])
-    React.useEffect(() => { setPage(0); fetchPage(0, rowsPerPage) }, [query, status, orderBy, order])
+    React.useEffect(() => {
+        fetchPage(0, rowsPerPage)
+    }, [])
+    React.useEffect(() => {
+        fetchPage(page, rowsPerPage)
+    }, [page, rowsPerPage])
+    React.useEffect(() => {
+        setPage(0)
+        fetchPage(0, rowsPerPage)
+    }, [query, status, orderBy, order])
 
     const handleSort = (key: keyof NormalizedItem) => {
         if (orderBy === key) setOrder(prev => (prev === 'asc' ? 'desc' : 'asc'))
-        else { setOrderBy(key); setOrder('asc') }
+        else {
+            setOrderBy(key)
+            setOrder('asc')
+        }
     }
 
     return (
         <Container maxWidth="lg" sx={{ py: 4 }}>
-            <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ xs: 'stretch', sm: 'center' }} justifyContent="space-between" spacing={2} sx={{ mb: 3 }}>
-                <Typography variant="h4" fontWeight={800}>Inventario</Typography>
-                <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpenCreate(true)}>Agregar producto</Button>
+            <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                alignItems={{ xs: 'stretch', sm: 'center' }}
+                justifyContent="space-between"
+                spacing={2}
+                sx={{ mb: 3 }}
+            >
+                <Stack direction="row" spacing={1} alignItems="center">
+                    <IconButton onClick={() => router.back()} sx={{ color: '#9e9e9e' }}>
+                        <ArrowBackIcon />
+                    </IconButton>
+                    <Typography variant="h4" fontWeight={800}>
+                        Inventario
+                    </Typography>
+                </Stack>
+                <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpenCreate(true)}>
+                    Agregar producto
+                </Button>
             </Stack>
 
             <Card sx={{ p: 2, mb: 2 }}>
@@ -193,13 +238,13 @@ export default function InventoryPage() {
                     <TextField
                         fullWidth
                         value={query}
-                        onChange={(e) => setQuery(e.target.value)}
+                        onChange={e => setQuery(e.target.value)}
                         placeholder="Buscar por nombre o descripción"
                         InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon /></InputAdornment> }}
                     />
                     <FormControl fullWidth>
                         <InputLabel>Estado</InputLabel>
-                        <Select value={status} label="Estado" onChange={(e) => setStatus(e.target.value)}>
+                        <Select value={status} label="Estado" onChange={e => setStatus(e.target.value)}>
                             <MenuItem value="Todos">Todos</MenuItem>
                             <MenuItem value="ACTIVE">Activo</MenuItem>
                             <MenuItem value="INACTIVE">Inactivo</MenuItem>
@@ -210,7 +255,9 @@ export default function InventoryPage() {
 
             <Card>
                 {loading ? (
-                    <Box sx={{ py: 6, display: 'grid', placeItems: 'center' }}><CircularProgress /></Box>
+                    <Box sx={{ py: 6, display: 'grid', placeItems: 'center' }}>
+                        <CircularProgress />
+                    </Box>
                 ) : error ? (
                     <Box sx={{ py: 6, textAlign: 'center', color: 'error.main' }}>{error}</Box>
                 ) : (
@@ -220,20 +267,52 @@ export default function InventoryPage() {
                                 <TableHead>
                                     <TableRow>
                                         <TableCell onClick={() => handleSort('id')} sx={{ cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                                            ID {orderBy === 'id' ? (order === 'asc' ? <ArrowUpwardIcon fontSize="inherit" /> : <ArrowDownwardIcon fontSize="inherit" />) : null}
+                                            ID{' '}
+                                            {orderBy === 'id'
+                                                ? order === 'asc'
+                                                    ? <ArrowUpwardIcon fontSize="inherit" />
+                                                    : <ArrowDownwardIcon fontSize="inherit" />
+                                                : null}
                                         </TableCell>
                                         <TableCell onClick={() => handleSort('name')} sx={{ cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                                            Nombre {orderBy === 'name' ? (order === 'asc' ? <ArrowUpwardIcon fontSize="inherit" /> : <ArrowDownwardIcon fontSize="inherit" />) : null}
+                                            Nombre{' '}
+                                            {orderBy === 'name'
+                                                ? order === 'asc'
+                                                    ? <ArrowUpwardIcon fontSize="inherit" />
+                                                    : <ArrowDownwardIcon fontSize="inherit" />
+                                                : null}
                                         </TableCell>
                                         <TableCell>Descripción</TableCell>
-                                        <TableCell align="right" onClick={() => handleSort('stock')} sx={{ cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                                            Stock {orderBy === 'stock' ? (order === 'asc' ? <ArrowUpwardIcon fontSize="inherit" /> : <ArrowDownwardIcon fontSize="inherit" />) : null}
+                                        <TableCell
+                                            align="right"
+                                            onClick={() => handleSort('stock')}
+                                            sx={{ cursor: 'pointer', whiteSpace: 'nowrap' }}
+                                        >
+                                            Stock{' '}
+                                            {orderBy === 'stock'
+                                                ? order === 'asc'
+                                                    ? <ArrowUpwardIcon fontSize="inherit" />
+                                                    : <ArrowDownwardIcon fontSize="inherit" />
+                                                : null}
                                         </TableCell>
                                         <TableCell onClick={() => handleSort('status')} sx={{ cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                                            Estado {orderBy === 'status' ? (order === 'asc' ? <ArrowUpwardIcon fontSize="inherit" /> : <ArrowDownwardIcon fontSize="inherit" />) : null}
+                                            Estado{' '}
+                                            {orderBy === 'status'
+                                                ? order === 'asc'
+                                                    ? <ArrowUpwardIcon fontSize="inherit" />
+                                                    : <ArrowDownwardIcon fontSize="inherit" />
+                                                : null}
                                         </TableCell>
-                                        <TableCell onClick={() => handleSort('updated_at')} sx={{ cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                                            Actualizado {orderBy === 'updated_at' ? (order === 'asc' ? <ArrowUpwardIcon fontSize="inherit" /> : <ArrowDownwardIcon fontSize="inherit" />) : null}
+                                        <TableCell
+                                            onClick={() => handleSort('updated_at')}
+                                            sx={{ cursor: 'pointer', whiteSpace: 'nowrap' }}
+                                        >
+                                            Actualizado{' '}
+                                            {orderBy === 'updated_at'
+                                                ? order === 'asc'
+                                                    ? <ArrowUpwardIcon fontSize="inherit" />
+                                                    : <ArrowDownwardIcon fontSize="inherit" />
+                                                : null}
                                         </TableCell>
                                     </TableRow>
                                 </TableHead>
@@ -242,13 +321,29 @@ export default function InventoryPage() {
                                     {rows.map(r => {
                                         const meta = getStatusMeta(r.status)
                                         return (
-                                            <TableRow key={r.id} hover sx={{ cursor: 'pointer' }} onClick={() => { setSelected(r); setDetailOpen(true) }}>
+                                            <TableRow
+                                                key={r.id}
+                                                hover
+                                                sx={{ cursor: 'pointer' }}
+                                                onClick={() => {
+                                                    setSelected(r)
+                                                    setDetailOpen(true)
+                                                }}
+                                            >
                                                 <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatShortId(r.id)}</TableCell>
-                                                <TableCell sx={{ maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.name || '—'}</TableCell>
-                                                <TableCell sx={{ maxWidth: 420, overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.description || '—'}</TableCell>
+                                                <TableCell sx={{ maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                    {r.name || '—'}
+                                                </TableCell>
+                                                <TableCell sx={{ maxWidth: 420, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                    {r.description || '—'}
+                                                </TableCell>
                                                 <TableCell align="right">{Number.isFinite(r.stock) ? r.stock : 0}</TableCell>
-                                                <TableCell><Chip label={meta.label} color={meta.color} size="small" sx={{ fontWeight: 700 }} /></TableCell>
-                                                <TableCell>{r.updated_at ? new Date(r.updated_at).toLocaleString('es-CL') : '—'}</TableCell>
+                                                <TableCell>
+                                                    <Chip label={meta.label} color={meta.color} size="small" sx={{ fontWeight: 700 }} />
+                                                </TableCell>
+                                                <TableCell>
+                                                    {r.updated_at ? new Date(r.updated_at).toLocaleString('es-CL') : '—'}
+                                                </TableCell>
                                             </TableRow>
                                         )
                                     })}
@@ -262,7 +357,7 @@ export default function InventoryPage() {
                             page={rowsPerPage === -1 ? 0 : page}
                             onPageChange={(_, p) => setPage(p)}
                             rowsPerPage={rowsPerPage}
-                            onRowsPerPageChange={(e) => {
+                            onRowsPerPageChange={e => {
                                 const val = parseInt(e.target.value, 10)
                                 setRowsPerPage(val)
                                 setPage(0)
@@ -280,7 +375,7 @@ export default function InventoryPage() {
             <CreateProductDialog
                 open={openCreate}
                 onClose={() => setOpenCreate(false)}
-                onCreated={(created) => {
+                onCreated={created => {
                     const n = normalizeItem(created as Item)
                     setRows(prev => sortRows([n, ...prev], orderBy, order))
                     setTotal(t => t + 1)
@@ -295,7 +390,7 @@ export default function InventoryPage() {
 function CreateProductDialog({
                                  open,
                                  onClose,
-                                 onCreated,
+                                 onCreated
                              }: {
     open: boolean
     onClose: () => void
@@ -325,7 +420,7 @@ function CreateProductDialog({
                 name: name.trim(),
                 description: description.trim(),
                 stock,
-                status,
+                status
             } as any)
             onClose()
         } catch (e: any) {
@@ -339,16 +434,29 @@ function CreateProductDialog({
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
             <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 Agregar producto
-                <IconButton onClick={onClose}><CloseIcon /></IconButton>
+                <IconButton onClick={onClose}>
+                    <CloseIcon />
+                </IconButton>
             </DialogTitle>
             <DialogContent dividers>
                 <Stack spacing={2} sx={{ pt: 1 }}>
-                    <TextField label="Nombre" fullWidth value={name} onChange={(e) => setName(e.target.value)} />
-                    <TextField label="Descripción" fullWidth value={description} onChange={(e) => setDescription(e.target.value)} />
-                    <TextField label="Stock" type="number" inputProps={{ min: 0 }} fullWidth value={stock} onChange={(e) => setStock(Number(e.target.value))} />
+                    <TextField label="Nombre" fullWidth value={name} onChange={e => setName(e.target.value)} />
+                    <TextField label="Descripción" fullWidth value={description} onChange={e => setDescription(e.target.value)} />
+                    <TextField
+                        label="Stock"
+                        type="number"
+                        inputProps={{ min: 0 }}
+                        fullWidth
+                        value={stock}
+                        onChange={e => setStock(Number(e.target.value))}
+                    />
                     <FormControl fullWidth>
                         <InputLabel>Estado</InputLabel>
-                        <Select value={status} label="Estado" onChange={(e) => setStatus(e.target.value as 'ACTIVE' | 'INACTIVE')}>
+                        <Select
+                            value={status}
+                            label="Estado"
+                            onChange={e => setStatus(e.target.value as 'ACTIVE' | 'INACTIVE')}
+                        >
                             <MenuItem value="ACTIVE">Activo</MenuItem>
                             <MenuItem value="INACTIVE">Inactivo</MenuItem>
                         </Select>
@@ -356,8 +464,12 @@ function CreateProductDialog({
                 </Stack>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onClose} variant="text">Cancelar</Button>
-                <Button onClick={handleSave} variant="contained" disabled={submitting}>{submitting ? 'Guardando…' : 'Guardar'}</Button>
+                <Button onClick={onClose} variant="text">
+                    Cancelar
+                </Button>
+                <Button onClick={handleSave} variant="contained" disabled={submitting}>
+                    {submitting ? 'Guardando…' : 'Guardar'}
+                </Button>
             </DialogActions>
         </Dialog>
     )
@@ -376,51 +488,46 @@ function ProductDetailDialog({
     const [loading, setLoading] = React.useState(false)
     const [movements, setMovements] = React.useState<Movement[]>([])
 
-
-
-
     React.useEffect(() => {
         let mounted = true
         async function load() {
+            const r = await fetch(
+                'https://pr1vz28mok.execute-api.us-east-2.amazonaws.com/prod/api/v1/stock/product/' + product?.id,
+                {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            )
 
-          const r = await fetch('https://pr1vz28mok.execute-api.us-east-2.amazonaws.com/prod/api/v1/stock/product/'+product?.id, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          })
+            const j = await r.json()
 
-          const j = await r.json()
-          console.log('j', j)
+            const mov: Movement[] = j.data.map((m: any) => ({
+                count: m.count,
+                created_at: m.created_at,
+                updated_at: m.updated_at,
+                type: m.type_movement === 1 ? 'entrada' : 'salida'
+            }))
 
-          const mov: Movement[] = j.data.map((m: any) => ({
-            count: m.count,
-            created_at: m.created_at,
-            updated_at: m.updated_at,
-            type : m.type_movement === 1 ? 'entrada' : 'salida',
-          }));
+            setMovements(mov)
 
-          console.log({mov})
-
-          setMovements(mov)
-
-          setLoading(false)
+            setLoading(false)
         }
 
-      if (open) {
-        load()
-      }else{
-        setMovements([])
-      }
+        if (open) {
+            load()
+        } else {
+            setMovements([])
+        }
     }, [open, product])
-
-  console.log({movements, loading})
-
-  console.log({open})
 
     const meta = getStatusMeta(product?.status)
     const glass = {
-        background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
+        background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(
+            theme.palette.background.paper,
+            0.7
+        )} 100%)`,
         backdropFilter: 'blur(18px)',
         border: `1px solid ${alpha(COLORS.primary, 0.12)}`,
         borderRadius: 3,
@@ -432,17 +539,37 @@ function ProductDetailDialog({
     return (
         <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth PaperProps={{ sx: { maxHeight: '92vh' } }}>
             <DialogTitle sx={{ p: 0 }}>
-                <Box sx={{ p: 3, borderBottom: `1px solid ${alpha(COLORS.dark, 0.08)}`, background: `linear-gradient(135deg, ${alpha(COLORS.primary, 0.06)} 0%, ${alpha(COLORS.secondary, 0.04)} 100%)`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box
+                    sx={{
+                        p: 3,
+                        borderBottom: `1px solid ${alpha(COLORS.dark, 0.08)}`,
+                        background: `linear-gradient(135deg, ${alpha(COLORS.primary, 0.06)} 0%, ${alpha(
+                            COLORS.secondary,
+                            0.04
+                        )} 100%)`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between'
+                    }}
+                >
                     <Stack direction="row" alignItems="center" spacing={2}>
-                        <Avatar sx={{ bgcolor: COLORS.primary, width: 44, height: 44 }}>{product.name?.[0]?.toUpperCase() || 'P'}</Avatar>
+                        <Avatar sx={{ bgcolor: COLORS.primary, width: 44, height: 44 }}>
+                            {product.name?.[0]?.toUpperCase() || 'P'}
+                        </Avatar>
                         <Box>
-                            <Typography variant="h6" fontWeight={800}>{product.name || 'Producto'}</Typography>
-                            <Typography variant="body2" sx={{ color: alpha(COLORS.dark, 0.7) }}>ID {product.id}</Typography>
+                            <Typography variant="h6" fontWeight={800}>
+                                {product.name || 'Producto'}
+                            </Typography>
+                            <Typography variant="body2" sx={{ color: alpha(COLORS.dark, 0.7) }}>
+                                ID {product.id}
+                            </Typography>
                         </Box>
                     </Stack>
                     <Stack direction="row" spacing={1} alignItems="center">
                         <Chip label={meta.label} color={meta.color} size="small" sx={{ fontWeight: 700 }} />
-                        <IconButton onClick={onClose}><CloseIcon /></IconButton>
+                        <IconButton onClick={onClose}>
+                            <CloseIcon />
+                        </IconButton>
                     </Stack>
                 </Box>
             </DialogTitle>
@@ -451,26 +578,45 @@ function ProductDetailDialog({
                 <Box sx={{ p: 3 }}>
                     <Card sx={{ ...glass, mb: 2 }}>
                         <Box sx={{ p: 2 }}>
-                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'flex-start', sm: 'center' }} justifyContent="space-between">
+                            <Stack
+                                direction={{ xs: 'column', sm: 'row' }}
+                                spacing={2}
+                                alignItems={{ xs: 'flex-start', sm: 'center' }}
+                                justifyContent="space-between"
+                            >
                                 <Stack direction="row" spacing={3}>
                                     <Stack>
-                                        <Typography variant="caption" sx={{ color: alpha(COLORS.dark, 0.6) }}>Stock</Typography>
-                                        <Typography variant="h6" fontWeight={800}>{product.stock}</Typography>
+                                        <Typography variant="caption" sx={{ color: alpha(COLORS.dark, 0.6) }}>
+                                            Stock
+                                        </Typography>
+                                        <Typography variant="h6" fontWeight={800}>
+                                            {product.stock}
+                                        </Typography>
                                     </Stack>
                                     <Stack>
-                                        <Typography variant="caption" sx={{ color: alpha(COLORS.dark, 0.6) }}>Actualizado</Typography>
-                                        <Typography variant="body1">{product.updated_at ? new Date(product.updated_at).toLocaleString('es-CL') : '—'}</Typography>
+                                        <Typography variant="caption" sx={{ color: alpha(COLORS.dark, 0.6) }}>
+                                            Actualizado
+                                        </Typography>
+                                        <Typography variant="body1">
+                                            {product.updated_at ? new Date(product.updated_at).toLocaleString('es-CL') : '—'}
+                                        </Typography>
                                     </Stack>
                                 </Stack>
-                                <Typography variant="body2" sx={{ maxWidth: 520, color: alpha(COLORS.dark, 0.8) }}>{product.description || 'Sin descripción'}</Typography>
+                                <Typography variant="body2" sx={{ maxWidth: 520, color: alpha(COLORS.dark, 0.8) }}>
+                                    {product.description || 'Sin descripción'}
+                                </Typography>
                             </Stack>
                         </Box>
                     </Card>
 
                     <Card sx={{ ...glass }}>
                         <Box sx={{ p: 2, pb: 0 }}>
-                            <Typography variant="subtitle1" fontWeight={800}>Movimientos</Typography>
-                            <Typography variant="body2" sx={{ color: alpha(COLORS.dark, 0.7) }}>Historial agregado por producto</Typography>
+                            <Typography variant="subtitle1" fontWeight={800}>
+                                Movimientos
+                            </Typography>
+                            <Typography variant="body2" sx={{ color: alpha(COLORS.dark, 0.7) }}>
+                                Historial agregado por producto
+                            </Typography>
                         </Box>
 
                         <TableContainer sx={{ maxHeight: 380 }}>
@@ -487,7 +633,9 @@ function ProductDetailDialog({
                                     {loading ? (
                                         <TableRow>
                                             <TableCell colSpan={5} align="center">
-                                                <Box sx={{ py: 4 }}><CircularProgress size={24} /></Box>
+                                                <Box sx={{ py: 4 }}>
+                                                    <CircularProgress size={24} />
+                                                </Box>
                                             </TableCell>
                                         </TableRow>
                                     ) : movements.length === 0 ? (
@@ -496,16 +644,27 @@ function ProductDetailDialog({
                                                 <Box sx={{ py: 4, color: 'text.secondary' }}>Sin movimientos</Box>
                                             </TableCell>
                                         </TableRow>
-                                    ) : movements.map((m, i) => (
-                                        <TableRow key={i} hover>
-                                            <TableCell>{m.count}</TableCell>
-                                            <TableCell>
-                                                <Chip label={m.type === 'entrada' ? 'Entrada' : 'Salida'} size="small" color={m.type === 'entrada' ? 'success' : 'warning'} sx={{ fontWeight: 700 }} />
-                                            </TableCell>
-                                            <TableCell>{m.created_at ? new Date(m.created_at).toLocaleString('es-CL') : '—'}</TableCell>
-                                            <TableCell>{m.updated_at ? new Date(m.updated_at).toLocaleString('es-CL') : '—'}</TableCell>
-                                        </TableRow>
-                                    ))}
+                                    ) : (
+                                        movements.map((m, i) => (
+                                            <TableRow key={i} hover>
+                                                <TableCell>{m.count}</TableCell>
+                                                <TableCell>
+                                                    <Chip
+                                                        label={m.type === 'entrada' ? 'Entrada' : 'Salida'}
+                                                        size="small"
+                                                        color={m.type === 'entrada' ? 'success' : 'warning'}
+                                                        sx={{ fontWeight: 700 }}
+                                                    />
+                                                </TableCell>
+                                                <TableCell>
+                                                    {m.created_at ? new Date(m.created_at).toLocaleString('es-CL') : '—'}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {m.updated_at ? new Date(m.updated_at).toLocaleString('es-CL') : '—'}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
                                 </TableBody>
                             </Table>
                         </TableContainer>
@@ -514,7 +673,9 @@ function ProductDetailDialog({
             </DialogContent>
 
             <DialogActions sx={{ p: 2 }}>
-                <Button variant="contained" onClick={onClose}>Cerrar</Button>
+                <Button variant="contained" onClick={onClose}>
+                    Cerrar
+                </Button>
             </DialogActions>
         </Dialog>
     )

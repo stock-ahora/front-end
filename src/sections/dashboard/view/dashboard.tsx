@@ -2,32 +2,29 @@
 
 import React from 'react'
 import Link from 'next/link'
-import {usePathname} from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import {
-    Box, Container, Grid, Card, CardActionArea, Typography, Divider,
-    Chip, Stack, Badge, Tooltip, CardHeader, CardContent
+    Box,
+    Container,
+    Grid,
+    Card,
+    CardActionArea,
+    Typography,
+    Divider,
+    Stack,
+    Badge,
+    Tooltip
 } from '@mui/material'
-import {alpha} from '@mui/material/styles'
+import { alpha } from '@mui/material/styles'
 import AssessmentIcon from '@mui/icons-material/Assessment'
 import InventoryIcon from '@mui/icons-material/Inventory'
 import ReceiptIcon from '@mui/icons-material/Receipt'
 import NotificationsIcon from '@mui/icons-material/Notifications'
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 import BoltIcon from '@mui/icons-material/Bolt'
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
-
-import dayjs from 'dayjs'
-import 'dayjs/locale/es'
-import {AdapterDayjs} from '@mui/x-date-pickers/AdapterDayjs'
-import {LocalizationProvider} from '@mui/x-date-pickers/LocalizationProvider'
-import {DateCalendar} from '@mui/x-date-pickers/DateCalendar'
-import {esES} from '@mui/x-date-pickers/locales'
+import AutoGraphIcon from '@mui/icons-material/AutoGraph'
 
 import ChatbotWidget from '@/components/dashboard/components/chat-bot'
 import NotifyPopup from '@/components/ui/notify-popup'
-import AutoGraphIcon from '@mui/icons-material/AutoGraph'; // perfecto para "modelo predictivo"
-
-dayjs.locale('es')
 
 export default function DashboardSelector() {
     const pathname = usePathname()
@@ -38,8 +35,7 @@ export default function DashboardSelector() {
         {
             title: 'Notificaciones',
             icon: NotificationsIcon,
-          disabled: false,
-
+            disabled: false,
             href: '/notification',
             bg: 'linear-gradient(135deg, #eaf2ff 0%, #f4f8ff 100%)',
             ring: '#cfe0ff',
@@ -50,8 +46,7 @@ export default function DashboardSelector() {
         {
             title: 'Inventario',
             icon: InventoryIcon,
-          disabled: false,
-
+            disabled: false,
             href: '/inventory',
             bg: 'linear-gradient(135deg, #e6f6ff 0%, #eefbff 100%)',
             ring: '#b3e6ff',
@@ -62,7 +57,7 @@ export default function DashboardSelector() {
         {
             title: 'Dashboard',
             icon: AssessmentIcon,
-          disabled: false,
+            disabled: false,
             href: '/reports',
             bg: 'linear-gradient(135deg, #edf1ff 0%, #f3f0ff 100%)',
             ring: '#d8cff6',
@@ -73,7 +68,7 @@ export default function DashboardSelector() {
         {
             title: 'OCR Online',
             icon: ReceiptIcon,
-          disabled: false,
+            disabled: false,
             href: '/invoice',
             bg: 'linear-gradient(135deg, #fff8e1 0%, #fff3cd 100%)',
             ring: '#ffe69b',
@@ -81,18 +76,17 @@ export default function DashboardSelector() {
             badge: 0,
             hint: 'Documentos por emitir'
         },
-
-      {
-        title: 'Modelo Predictivo',
-        icon: AutoGraphIcon, // icono de tendencia / predicción
-        disabled: false,
-        href: '/predictive-model',
-        bg: 'linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%)', // fondo rojizo suave
-        ring: '#ef5350', // rojo suave para el anillo
-        avatarBg: 'linear-gradient(45deg,#e53935,#ef5350)', // degradado rojo
-        badge: 0,
-        hint: 'Basado en análisis predictivo-PROXIMAMENTE'
-      }
+        {
+            title: 'Modelo Predictivo',
+            icon: AutoGraphIcon,
+            disabled: false,
+            href: '/predictive-model',
+            bg: 'linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%)',
+            ring: '#ef5350',
+            avatarBg: 'linear-gradient(45deg,#e53935,#ef5350)',
+            badge: 0,
+            hint: 'Basado en análisis predictivo'
+        }
     ] as const
 
     return (
@@ -101,64 +95,99 @@ export default function DashboardSelector() {
                 display: 'flex',
                 flexDirection: 'column',
                 minHeight: '100vh',
-                bgcolor: 'transparent',
-                justifyContent: 'center',
+                bgcolor: 'transparent'
             }}
         >
-            <Container maxWidth="lg" sx={{py: 6}}>
+            <Container
+                maxWidth="lg"
+                sx={{
+                    py: 6,
+                    display: 'flex',
+                    justifyContent: 'center'
+                }}
+            >
                 <Card
                     sx={{
-                        p: {xs: 3, md: 4},
+                        width: '100%',
+                        maxWidth: 1200,
+                        mx: 'auto',
+                        p: { xs: 3, md: 4 },
                         borderRadius: 4,
                         boxShadow: '0 8px 25px rgba(0,0,0,0.08)',
-                        background: '#fff',
+                        background: '#fff'
                     }}
                 >
-                    <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{mb: 2}}>
+                    <Stack
+                        direction="row"
+                        alignItems="center"
+                        justifyContent="space-between"
+                        sx={{ mb: 2 }}
+                    >
                         <Stack direction="row" spacing={1.5} alignItems="center">
-                            <BoltIcon color="primary"/>
+                            <BoltIcon color="primary" />
                             <Box>
-                                <Typography variant="h5" fontWeight={800}>Accesos rápidos</Typography>
+                                <Typography variant="h5" fontWeight={800}>
+                                    Accesos rápidos
+                                </Typography>
                                 <Typography variant="body2" color="text.secondary">
                                     Atajos a lo más usado: notificaciones, inventario y más.
                                 </Typography>
                             </Box>
                         </Stack>
-
-
                     </Stack>
 
-                    <Divider textAlign="left" sx={{mb: 3}}>
-                        <Typography variant="caption" sx={{color: 'text.secondary'}}>
+                    <Divider textAlign="left" sx={{ mb: 3 }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
                             Tu actividad
                         </Typography>
                     </Divider>
 
-                    <Grid container spacing={4} alignItems="stretch">
-                        <Grid item xs={12} md={12}>
-                            <Grid container spacing={2}>
-                                {quickTiles.map((t) => {
+                    <Grid container spacing={3} justifyContent="center">
+                        <Grid
+                            item
+                            xs={12}
+                            md={12}
+                            sx={{ display: 'flex', justifyContent: 'center' }}
+                        >
+                            <Grid
+                                container
+                                spacing={2}
+                                justifyContent="center"
+                                sx={{ maxWidth: 900, width: '100%' }}
+                            >
+                                {quickTiles.map(t => {
                                     const Icon = t.icon
                                     return (
-                                        <Grid item xs={12} sm={6} key={t.title}>
-                                            <Tooltip title={t.hint} arrow>
+                                        <Grid
+                                            item
+                                            xs={12}
+                                            sm={6}
+                                            key={t.title}
+                                            sx={{ display: 'flex', justifyContent: 'center' }}
+                                        >
+                                            <Tooltip title={t.hint} arrow sx={{ width: '100%' }}>
                                                 <Card
                                                     elevation={0}
                                                     sx={{
                                                         position: 'relative',
                                                         borderRadius: 3,
                                                         bgcolor: t.bg,
-                                                        boxShadow: '0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.06)',
+                                                        boxShadow:
+                                                            '0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.06)',
                                                         transition: 'transform .2s ease, box-shadow .2s ease',
                                                         overflow: 'hidden',
-                                                        opacity: t.disabled ? 0.5 : 1, // 👈 se ve atenuado
-                                                        pointerEvents: t.disabled ? 'none' : 'auto', // 👈 no clickeable
+                                                        opacity: t.disabled ? 0.5 : 1,
+                                                        pointerEvents: t.disabled ? 'none' : 'auto',
+                                                        height: '100%',
+                                                        width: '100%',
+                                                        maxWidth: 460,
                                                         '&:hover': {
                                                             transform: 'translateY(-3px)',
-                                                            boxShadow: '0 10px 26px rgba(0,0,0,0.12)',
+                                                            boxShadow: '0 10px 26px rgba(0,0,0,0.12)'
                                                         },
                                                         '&:focus-within': {
-                                                            outline: (th) => `2px solid ${alpha(th.palette.primary.main, 0.6)}`
+                                                            outline: th =>
+                                                                `2px solid ${alpha(th.palette.primary.main, 0.6)}`
                                                         }
                                                     }}
                                                 >
@@ -171,13 +200,19 @@ export default function DashboardSelector() {
                                                             alignItems: 'center',
                                                             gap: 2,
                                                             position: 'relative',
+                                                            height: '100%',
+                                                            minHeight: 110
                                                         }}
                                                     >
                                                         <Badge
                                                             color="error"
                                                             badgeContent={t.badge}
                                                             overlap="circular"
-                                                            sx={{'& .MuiBadge-badge': {boxShadow: '0 0 0 2px #fff'}}}
+                                                            sx={{
+                                                                '& .MuiBadge-badge': {
+                                                                    boxShadow: '0 0 0 2px #fff'
+                                                                }
+                                                            }}
                                                         >
                                                             <Box
                                                                 sx={{
@@ -194,19 +229,27 @@ export default function DashboardSelector() {
                                                                         inset: -3,
                                                                         borderRadius: '50%',
                                                                         border: `2px solid ${t.ring}`,
-                                                                        opacity: 0.7,
-                                                                    },
+                                                                        opacity: 0.7
+                                                                    }
                                                                 }}
                                                             >
-                                                                <Icon sx={{color: '#fff', fontSize: 28}}/>
+                                                                <Icon sx={{ color: '#fff', fontSize: 28 }} />
                                                             </Box>
                                                         </Badge>
 
-                                                        <Box sx={{minWidth: 0}}>
-                                                            <Typography variant="subtitle1" fontWeight={800} noWrap>
+                                                        <Box sx={{ minWidth: 0, flex: 1 }}>
+                                                            <Typography
+                                                                variant="subtitle1"
+                                                                fontWeight={800}
+                                                                sx={{ wordBreak: 'break-word' }}
+                                                            >
                                                                 {t.title}
                                                             </Typography>
-                                                            <Typography variant="body2" color="text.secondary" noWrap>
+                                                            <Typography
+                                                                variant="body2"
+                                                                color="text.secondary"
+                                                                sx={{ mt: 0.25, wordBreak: 'break-word' }}
+                                                            >
                                                                 Abrir {t.title}
                                                             </Typography>
                                                         </Box>
@@ -218,57 +261,6 @@ export default function DashboardSelector() {
                                 })}
                             </Grid>
                         </Grid>
-
-                        {/*<Grid item xs={12} md={4}>*/}
-                        {/*    <Card*/}
-                        {/*        sx={{*/}
-                        {/*            borderRadius: 3,*/}
-                        {/*            height: '100%',*/}
-                        {/*            display: 'flex',*/}
-                        {/*            flexDirection: 'column',*/}
-                        {/*            border: 'none',*/}
-                        {/*            boxShadow: '0 1px 6px rgba(0,0,0,0.06)'*/}
-                        {/*        }}*/}
-                        {/*    >*/}
-                        {/*        <CardHeader*/}
-                        {/*            avatar={<CalendarMonthIcon color="primary"/>}*/}
-                        {/*            title={<Typography variant="h6" fontWeight={800}>Calendario</Typography>}*/}
-                        {/*            subheader={<Typography variant="body2" color="text.secondary">Agenda y*/}
-                        {/*                vencimientos</Typography>}*/}
-                        {/*            sx={{pb: 0.5}}*/}
-                        {/*        />*/}
-                        {/*        <CardContent sx={{pt: 1}}>*/}
-                        {/*            <LocalizationProvider*/}
-                        {/*                dateAdapter={AdapterDayjs}*/}
-                        {/*                adapterLocale="es"*/}
-                        {/*                localeText={esES.components.MuiLocalizationProvider.defaultProps.localeText}*/}
-                        {/*            >*/}
-                        {/*                <DateCalendar*/}
-                        {/*                    sx={{*/}
-                        {/*                        borderRadius: 2,*/}
-                        {/*                        bgcolor: '#f9fafc',*/}
-                        {/*                        boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.04)',*/}
-                        {/*                        p: 1.5,*/}
-                        {/*                        '& .MuiPickersDay-root': {*/}
-                        {/*                            borderRadius: '8px',*/}
-                        {/*                            '&.Mui-selected': (t) => ({*/}
-                        {/*                                background: `linear-gradient(45deg, ${t.palette.primary.main}, ${t.palette.primary.light})`*/}
-                        {/*                            })*/}
-                        {/*                        },*/}
-                        {/*                    }}*/}
-                        {/*                />*/}
-                        {/*            </LocalizationProvider>*/}
-
-                        {/*            <Stack direction="row" spacing={1.5} alignItems="center" sx={{mt: 1}}>*/}
-                        {/*                <InfoOutlinedIcon fontSize="small" sx={{color: 'text.secondary'}}/>*/}
-                        {/*                <Stack direction="row" spacing={1} flexWrap="wrap">*/}
-                        {/*                    <Chip size="small" label="Vence hoy" color="error" variant="outlined"/>*/}
-                        {/*                    <Chip size="small" label="Entrega" color="primary" variant="outlined"/>*/}
-                        {/*                </Stack>*/}
-                        {/*            </Stack>*/}
-                        {/*        </CardContent>*/}
-                        {/*    </Card>*/}
-                        {/*</Grid>*/}
                     </Grid>
                 </Card>
             </Container>
@@ -279,7 +271,7 @@ export default function DashboardSelector() {
                 autoOpenOnceKey="ts_seen_dashboard_toast_v222"
             />
 
-            <ChatbotWidget/>
+            <ChatbotWidget />
         </Box>
     )
 }

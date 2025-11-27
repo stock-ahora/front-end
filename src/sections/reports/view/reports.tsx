@@ -31,50 +31,51 @@ import {
     InputAdornment,
     Grid,
     Avatar,
-    Tooltip
+    Tooltip,
+    IconButton
 } from '@mui/material'
 import { alpha } from '@mui/material/styles'
 import { BarChart, BarPlot } from '@mui/x-charts/BarChart'
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 import { ChartContainer, ChartsXAxis, ChartsYAxis, LineChart, PieChart, ScatterPlot } from '@mui/x-charts'
-import { DateRangePicker } from '@mui/x-date-pickers-pro/DateRangePicker';
+import { DateRangePicker } from '@mui/x-date-pickers-pro/DateRangePicker'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import { useRouter } from 'next/navigation'
 import dayjs from 'dayjs'
-import 'dayjs/locale/es';
-import isoWeek from 'dayjs/plugin/isoWeek';
-import utc from "dayjs/plugin/utc";
-
+import 'dayjs/locale/es'
+import isoWeek from 'dayjs/plugin/isoWeek'
+import utc from 'dayjs/plugin/utc'
 
 type ReportKind = 'quiebres' | 'rotacion' | 'aging' | 'valorizacion' | 'facturas' | 'sla'
 type ChartKind = 'bar' | 'line' | 'pie'
 type Row = { producto: string; categoria: string; cantidad: number; costo: number; fecha: string }
-dayjs.extend(utc);
-dayjs.extend(isoWeek);
-dayjs.locale("es");
+dayjs.extend(utc)
+dayjs.extend(isoWeek)
+dayjs.locale('es')
 
 const bullets = [
-  {
-    label: 'Variable 1',
-    max: 300,
-    ranges: [150, 250, 300],        // fondo gris claro → gris medio → gris oscuro
-    value: 230,                     // barra azul
-    target: 260,                    // marca vertical
-  },
-  {
-    label: 'Variable 2',
-    max: 30,
-    ranges: [15, 25, 30],
-    value: 22,
-    target: 26,
-  },
-  {
-    label: 'Variable 3',
-    max: 600,
-    ranges: [300, 500, 600],
-    value: 440,
-    target: 530,
-  },
-];
-
+    {
+        label: 'Variable 1',
+        max: 300,
+        ranges: [150, 250, 300],
+        value: 230,
+        target: 260
+    },
+    {
+        label: 'Variable 2',
+        max: 30,
+        ranges: [15, 25, 30],
+        value: 22,
+        target: 26
+    },
+    {
+        label: 'Variable 3',
+        max: 600,
+        ranges: [300, 500, 600],
+        value: 440,
+        target: 530
+    }
+]
 
 type ProductoTop = {
     nombre_producto: string
@@ -82,8 +83,8 @@ type ProductoTop = {
 }
 
 type OverTimeProduct = {
-  periodo: string
-  mes: string
+    periodo: string
+    mes: string
     ingresos: number
     egresos: number
 }
@@ -121,6 +122,8 @@ function useContainerWidth() {
 }
 
 export default function ReportsPage() {
+    const router = useRouter()
+
     const barBox = useContainerWidth()
     const lineOverTimeBox = useContainerWidth()
     const pieBox = useContainerWidth()
@@ -133,9 +136,9 @@ export default function ReportsPage() {
     const [page, setPage] = useState(0)
     const [rowsPerPage, setRowsPerPage] = useState(5)
     const clientId = '8d1b88f0-e5c7-4670-8bbb-3045f9ab3995'
-  const [rangoFechas, setRangoFechas] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null]>([null, null])
+    const [rangoFechas, setRangoFechas] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null]>([null, null])
     const [date, setDate] = useState<dayjs.Dayjs | null>(null)
-  const [kindDate, setKindDate] = useState<'month' | 'week' | ''>('')
+    const [kindDate, setKindDate] = useState<'month' | 'week' | ''>('')
     const topColumns = [
         { field: 'nombre_producto', headerName: 'Producto', flex: 1 },
         { field: 'unidades', headerName: 'Unidades', width: 120 }
@@ -145,7 +148,7 @@ export default function ReportsPage() {
     const [productosOverTime, setProductosOverTime] = useState<OverTimeProduct[]>([])
     const [summary, setSummary] = useState<summaryForClient>({ ingresos: 0, egresos: 0 })
     const [stockTrends, setStockTrends] = useState<stockTrend[]>([])
-  const [products, setProducts] = useState<product[]>([])
+    const [products, setProducts] = useState<product[]>([])
     const [productId, setProductId] = useState<string>('')
 
     useEffect(() => {
@@ -160,14 +163,22 @@ export default function ReportsPage() {
                 const topProducts: ProductoTop[] = await resTop.json()
                 setProductos(topProducts)
 
-              const respProducts = await fetch(`https://pr1vz28mok.execute-api.us-east-2.amazonaws.com/prod/api/v1/dashboard/get-product`, { headers })
+                const respProducts = await fetch(
+                    `https://pr1vz28mok.execute-api.us-east-2.amazonaws.com/prod/api/v1/dashboard/get-product`,
+                    { headers }
+                )
 
-              const productsObjet: product[] = await respProducts.json()
+                const productsObjet: product[] = await respProducts.json()
 
-              setProducts(productsObjet)
-              console.log('Fetched products:', productsObjet)
+                setProducts(productsObjet)
+                console.log('Fetched products:', productsObjet)
 
-                const resMove = await fetch(`${baseUrl}?typeRequet=movementOverTime&start=${encodeURIComponent("2024-02-01")}&end=${encodeURIComponent("2024-12-31")}&period=month`, { headers })
+                const resMove = await fetch(
+                    `${baseUrl}?typeRequet=movementOverTime&start=${encodeURIComponent(
+                        '2024-02-01'
+                    )}&end=${encodeURIComponent('2024-12-31')}&period=month`,
+                    { headers }
+                )
                 const movementOverTime: OverTimeProduct[] = await resMove.json()
                 setProductosOverTime(movementOverTime)
 
@@ -186,90 +197,92 @@ export default function ReportsPage() {
         fetchData()
     }, [clientId])
 
-  useEffect(() => {
-    const fetchData = async () => {
-    const baseUrl = 'https://pr1vz28mok.execute-api.us-east-2.amazonaws.com/prod/api/v1/dashboard'
-    const headers = { 'X-Client-Account-Id': clientId }
-      const start = rangoFechas[0]?.format('YYYY-MM-DD') ?? '2025-01-01'
-      const end = rangoFechas[1]?.format('YYYY-MM-DD') ?? '2026-01-01'
-      const resTop = await fetch(`${baseUrl}?typeRequet=topProducts&start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`, { headers })
-    const topProducts: ProductoTop[] = await resTop.json()
-    setProductos(topProducts)
-    }
+    useEffect(() => {
+        const fetchData = async () => {
+            const baseUrl = 'https://pr1vz28mok.execute-api.us-east-2.amazonaws.com/prod/api/v1/dashboard'
+            const headers = { 'X-Client-Account-Id': clientId }
+            const start = rangoFechas[0]?.format('YYYY-MM-DD') ?? '2025-01-01'
+            const end = rangoFechas[1]?.format('YYYY-MM-DD') ?? '2026-01-01'
+            const resTop = await fetch(
+                `${baseUrl}?typeRequet=topProducts&start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`,
+                { headers }
+            )
+            const topProducts: ProductoTop[] = await resTop.json()
+            setProductos(topProducts)
+        }
 
-    if(rangoFechas[0] && rangoFechas[1]){
-      console.log('rangoFechas changed:', rangoFechas)
-      fetchData()
-    }
-  }, [rangoFechas])
+        if (rangoFechas[0] && rangoFechas[1]) {
+            console.log('rangoFechas changed:', rangoFechas)
+            fetchData()
+        }
+    }, [rangoFechas])
 
-  useEffect(() => {
+    useEffect(() => {
+        console.log('Filters changed:', { kindDate, date, productId })
+        const fetchData = async () => {
+            let url = ''
+            const baseUrl =
+                'https://pr1vz28mok.execute-api.us-east-2.amazonaws.com/prod/api/v1/dashboard?typeRequet=movementOverTime'
+            const headers = { 'X-Client-Account-Id': clientId }
 
-    console.log('Filters changed:', { kindDate, date, productId })
-    const fetchData = async () => {
+            if (kindDate === 'week' && date) {
+                const start = date.startOf('month').format('YYYY-MM-DD')
+                const end = date.endOf('month').format('YYYY-MM-DD')
 
-      let url = ''
-      const baseUrl = 'https://pr1vz28mok.execute-api.us-east-2.amazonaws.com/prod/api/v1/dashboard?typeRequet=movementOverTime'
-      const headers = { 'X-Client-Account-Id': clientId }
+                url = `${baseUrl}&start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}&period=${kindDate}`
+            }
 
-      if (kindDate === 'week' && date) {
-        const start = date.startOf('month').format('YYYY-MM-DD');
-        const end = date.endOf('month').format('YYYY-MM-DD');
+            if (kindDate === 'month' && date) {
+                const start = date.startOf('year').format('YYYY-MM-DD')
+                const end = date.endOf('year').format('YYYY-MM-DD')
 
-        url = `${baseUrl}&start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}&period=${kindDate}`;
-      }
+                url = `${baseUrl}&start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}&period=${kindDate}`
+            }
 
-      if (kindDate === 'month' && date) {
-        const start = date.startOf('year').format('YYYY-MM-DD');
-        const end = date.endOf('year').format('YYYY-MM-DD');
+            if (productId) {
+                let urladd =
+                    url === ''
+                        ? baseUrl +
+                        `&productoId=${encodeURIComponent(
+                            productId
+                        )}&start=${encodeURIComponent('2024-01-01')}&end=${encodeURIComponent(
+                            '2024-12-31'
+                        )}&period=month`
+                        : `&productoId=${encodeURIComponent(productId)}`
 
-        url = `${baseUrl}&start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}&period=${kindDate}`;
-      }
+                console.log({ urladd })
 
-      if(productId){
+                url += urladd
+            }
 
-        let urladd = url === '' ? baseUrl + `&productoId=${encodeURIComponent(productId)}&start=${encodeURIComponent("2024-01-01")}&end=${encodeURIComponent("2024-12-31")}&period=month` : `&productoId=${encodeURIComponent(productId)}`
+            console.log('Constructed URL:', url)
+            const resMove = await fetch(`${url}`, { headers })
+            console.log({ resMove })
+            const movementOverTime: OverTimeProduct[] = await resMove.json()
+            console.log({ movementOverTime })
+            if (movementOverTime !== null && movementOverTime.length > 0) {
+                setProductosOverTime(movementOverTime)
+            } else {
+                setProductosOverTime([])
+            }
+        }
 
-        console.log({urladd})
-
-        url += urladd
-      }
-
-      console.log('Constructed URL:', url)
-      const resMove = await fetch(`${url}`, { headers })
-      console.log({resMove})
-      const movementOverTime: OverTimeProduct[] = await resMove.json()
-      console.log({movementOverTime})
-      if (movementOverTime !== null && movementOverTime.length > 0) {
-      setProductosOverTime(movementOverTime)
-      }else {
-        setProductosOverTime([])
-      }
-
-    }
-
-    fetchData()
-  }, [kindDate, date, productId])
+        fetchData()
+    }, [kindDate, date, productId])
 
     const chartData = useMemo(() => {
+        console.log('test', productosOverTime?.length !== 0)
 
-      console.log("test", productosOverTime?.length !== 0)
-
-      return productosOverTime?.length !== 0
+        return productosOverTime?.length !== 0
             ? productosOverTime?.map((d, index) => ({
-
-                x: kindDate === 'week' && date ? dayjs.utc(d.periodo).format("D ddd MMM") : d?.mes?.slice(0, 3),
+                x: kindDate === 'week' && date ? dayjs.utc(d.periodo).format('D ddd MMM') : d?.mes?.slice(0, 3),
                 ingresos: Number(d.ingresos ?? 0),
                 egresos: Number(d.egresos ?? 0)
             }))
             : []
     }, [productosOverTime])
 
-    // @ts-ignore
-  // @ts-ignore
-  // @ts-ignore
-  // @ts-ignore
-  return (
+    return (
         <Box
             sx={{
                 minHeight: '100vh',
@@ -282,6 +295,12 @@ export default function ReportsPage() {
             }}
         >
             <Container maxWidth="lg" sx={{ py: { xs: 2.5, md: 4 }, px: { xs: 1.5, sm: 2 } }}>
+                <Stack direction="row" alignItems="center" spacing={1.2} sx={{ mb: 1.5 }}>
+                    <IconButton onClick={() => router.back()} sx={{ color: 'text.secondary' }}>
+                        <ArrowBackIcon />
+                    </IconButton>
+                </Stack>
+
                 <Card
                     sx={{
                         p: { xs: 2, md: 3 },
@@ -330,75 +349,74 @@ export default function ReportsPage() {
                                         Top 7 productos con más movimientos
                                     </Typography>
                                 </Grid>
-                              <Grid item xs={12}>
-                                <Box sx={{ display: 'flex', gap: 2 }}>
-                                  <TextField
-                                    label="Desde"
-                                    type="date"
-                                    value={rangoFechas[0]?.format('YYYY-MM-DD')}
-                                    onChange={(e) => setRangoFechas([dayjs(e.target.value), rangoFechas[1]])}
-                                    InputLabelProps={{ shrink: true }}
-                                  />
-                                  <TextField
-                                    label="Hasta"
-                                    type="date"
-                                    value={rangoFechas[1]?.format('YYYY-MM-DD')}
-                                    onChange={(e) => {
-                                      const newDate = dayjs(e.target.value)
-                                      if (newDate.isBefore(rangoFechas[0], 'day')) {
-                                        setRangoFechas([newDate, newDate])
-                                      } else {
-                                        setRangoFechas([rangoFechas[0], newDate])
-                                      }
-                                    }}
-                                    InputLabelProps={{ shrink: true }}
-                                  />
-                                </Box>
-                              </Grid>
+                                <Grid item xs={12}>
+                                    <Box sx={{ display: 'flex', gap: 2 }}>
+                                        <TextField
+                                            label="Desde"
+                                            type="date"
+                                            value={rangoFechas[0]?.format('YYYY-MM-DD')}
+                                            onChange={e => setRangoFechas([dayjs(e.target.value), rangoFechas[1]])}
+                                            InputLabelProps={{ shrink: true }}
+                                        />
+                                        <TextField
+                                            label="Hasta"
+                                            type="date"
+                                            value={rangoFechas[1]?.format('YYYY-MM-DD')}
+                                            onChange={e => {
+                                                const newDate = dayjs(e.target.value)
+                                                if (newDate.isBefore(rangoFechas[0], 'day')) {
+                                                    setRangoFechas([newDate, newDate])
+                                                } else {
+                                                    setRangoFechas([rangoFechas[0], newDate])
+                                                }
+                                            }}
+                                            InputLabelProps={{ shrink: true }}
+                                        />
+                                    </Box>
+                                </Grid>
                                 <Grid item xs={12}>
                                     <Box ref={barBox.ref} sx={{ width: '100%' }}>
-                                      {Array.isArray(productos) && productos.length > 0 && (
-                                        <BarChart
-                                          height={barBox.width < 600 ? 260 : 400}
-                                          dataset={productos?.map((p, i) => ({
-                                            ...p,
-                                            idx: p.nombre_producto,
-                                          }))}
-                                          yAxis={[{
-                                            scaleType: 'band',
-                                            dataKey: 'idx',
-                                            width: 100,  // <–– espacio fijo para los nombres
-
-                                          }]}
-                                          xAxis={[
-                                            {
-                                              label: 'Cantidad de movimientos',
-                                            },
-                                          ]}
-                                          series={[
-                                            {
-                                              dataKey: 'ingresos',
-                                              label: 'Ingresos',
-                                              stack: 'total',
-                                              color: '#4CAF50',
-                                            },
-                                            {
-                                              dataKey: 'egresos',
-                                              label: 'Egresos',
-                                              stack: 'total',
-                                              color: '#F5C242',
-                                            },
-                                          ]}
-                                          slotProps={{
-                                            legend: {
-                                              position: { vertical: 'top', horizontal: 'center' },
-                                            },
-                                          }}
-                                          layout="horizontal"
-                                        />
-
-                                      )}
-
+                                        {Array.isArray(productos) && productos.length > 0 && (
+                                            <BarChart
+                                                height={barBox.width < 600 ? 260 : 400}
+                                                dataset={productos?.map((p, i) => ({
+                                                    ...p,
+                                                    idx: p.nombre_producto
+                                                }))}
+                                                yAxis={[
+                                                    {
+                                                        scaleType: 'band',
+                                                        dataKey: 'idx',
+                                                        width: 100
+                                                    }
+                                                ]}
+                                                xAxis={[
+                                                    {
+                                                        label: 'Cantidad de movimientos'
+                                                    }
+                                                ]}
+                                                series={[
+                                                    {
+                                                        dataKey: 'ingresos',
+                                                        label: 'Ingresos',
+                                                        stack: 'total',
+                                                        color: '#4CAF50'
+                                                    },
+                                                    {
+                                                        dataKey: 'egresos',
+                                                        label: 'Egresos',
+                                                        stack: 'total',
+                                                        color: '#F5C242'
+                                                    }
+                                                ]}
+                                                slotProps={{
+                                                    legend: {
+                                                        position: { vertical: 'top', horizontal: 'center' }
+                                                    }
+                                                }}
+                                                layout="horizontal"
+                                            />
+                                        )}
                                     </Box>
                                 </Grid>
                             </Grid>
@@ -412,151 +430,151 @@ export default function ReportsPage() {
                                     </Typography>
                                 </Grid>
                                 <Grid item xs={12}>
-                                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
-                                    <TextField
-                                      select
-                                      label="Producto"
-                                      value={filters.producto}
-                                      onChange={(e) => {
-                                        console.log(e.target.value)
-                                        setProductId(e.target.value)
-                                      setFilters(s => ({ ...s, producto: e.target.value }))}}
-                                      sx={{ minWidth: 240 }}
-                                    >
-                                      {Array.isArray(products) && products.map(p => (
-                                        <MenuItem key={p.id} value={p.id}>
-                                          {p.name}
-                                        </MenuItem>
-                                      ))}
-                                    </TextField>
+                                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
+                                        <TextField
+                                            select
+                                            label="Producto"
+                                            value={filters.producto}
+                                            onChange={e => {
+                                                console.log(e.target.value)
+                                                setProductId(e.target.value)
+                                                setFilters(s => ({ ...s, producto: e.target.value }))
+                                            }}
+                                            sx={{ minWidth: 240 }}
+                                        >
+                                            {Array.isArray(products) &&
+                                                products.map(p => (
+                                                    <MenuItem key={p.id} value={p.id}>
+                                                        {p.name}
+                                                    </MenuItem>
+                                                ))}
+                                        </TextField>
 
-                                    <TextField
-                                      select
-                                      label="Periodo"
-                                      value={filters.categoria}
-                                      onChange={(e) => {
-                                        console.log("value" + e.target.value)
-                                        const kindStr = e.target.value === "Años"? 'month' : 'week'
-                                        console.log(kindStr)
-                                        setKindDate(kindStr)
-                                        setFilters(s => ({ ...s, categoria: e.target.value }))
-                                      }}
-                                      sx={{ width: 160 }}
-                                    >
-                                      <MenuItem value="Años">Años</MenuItem>
-                                      <MenuItem value="Semanas">Semanas</MenuItem>
-                                    </TextField>
+                                        <TextField
+                                            select
+                                            label="Periodo"
+                                            value={filters.categoria}
+                                            onChange={e => {
+                                                console.log('value' + e.target.value)
+                                                const kindStr = e.target.value === 'Años' ? 'month' : 'week'
+                                                console.log(kindStr)
+                                                setKindDate(kindStr)
+                                                setFilters(s => ({ ...s, categoria: e.target.value }))
+                                            }}
+                                            sx={{ width: 160 }}
+                                        >
+                                            <MenuItem value="Años">Años</MenuItem>
+                                            <MenuItem value="Semanas">Semanas</MenuItem>
+                                        </TextField>
 
-                                    {filters.categoria === 'Años' && (
-                                      <TextField
-                                        select
-                                        label="Año"
-                                        value={to}
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                          setTo(e.target.value)
-                                          const year = e.target.value
-                                          setDate(dayjs(`${year}-01-01`))
-                                        }}
-                                        sx={{ width: 140 }}
-                                      >
-                                        {((any) => {
-                                          const start = 2024
-                                          const end = dayjs().year()
-                                          return Array.from({ length: end - start + 1 }, (_, i) => start + i).map(y => (
-                                            <MenuItem key={y} value={String(y)}>{String(y)}</MenuItem>
-                                          ))
-                                        })()}
-                                      </TextField>
-                                    )}
+                                        {filters.categoria === 'Años' && (
+                                            <TextField
+                                                select
+                                                label="Año"
+                                                value={to}
+                                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                                    setTo(e.target.value)
+                                                    const year = e.target.value
+                                                    setDate(dayjs(`${year}-01-01`))
+                                                }}
+                                                sx={{ width: 140 }}
+                                            >
+                                                {((any) => {
+                                                    const start = 2024
+                                                    const end = dayjs().year()
+                                                    return Array.from({ length: end - start + 1 }, (_, i) => start + i).map(y => (
+                                                        <MenuItem key={y} value={String(y)}>
+                                                            {String(y)}
+                                                        </MenuItem>
+                                                    ))
+                                                })()}
+                                            </TextField>
+                                        )}
 
-                                    {filters.categoria === 'Semanas' && (
-                                      <TextField
-                                        select
-                                        label="Mes (desde 2024)"
-                                        value={to}
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                          setTo(e.target.value)
-                                          const val = e.target.value // formato 'YYYY-MM'
-                                          setDate(dayjs(`${val}-01`))
-                                        }}
-                                        sx={{ minWidth: 180 }}
-                                      >
-                                        {(() => {
-                                          const items = []
-                                          let cur = dayjs('2024-01-01')
-                                          const end = dayjs()
-                                          while (cur.isBefore(end) || cur.isSame(end, 'month')) {
-                                            items.push(cur)
-                                            cur = cur.add(1, 'month')
-                                          }
-                                          return items.map(m => (
-                                            <MenuItem key={m.format('YYYY-MM')} value={m.format('YYYY-MM')}>
-                                              {m.format('MMMM YYYY')}
-                                            </MenuItem>
-                                          ))
-                                        })()}
-                                      </TextField>
-                                    )}
-                                  </Stack>
+                                        {filters.categoria === 'Semanas' && (
+                                            <TextField
+                                                select
+                                                label="Mes (desde 2024)"
+                                                value={to}
+                                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                                    setTo(e.target.value)
+                                                    const val = e.target.value
+                                                    setDate(dayjs(`${val}-01`))
+                                                }}
+                                                sx={{ minWidth: 180 }}
+                                            >
+                                                {(() => {
+                                                    const items = []
+                                                    let cur = dayjs('2024-01-01')
+                                                    const end = dayjs()
+                                                    while (cur.isBefore(end) || cur.isSame(end, 'month')) {
+                                                        items.push(cur)
+                                                        cur = cur.add(1, 'month')
+                                                    }
+                                                    return items.map(m => (
+                                                        <MenuItem key={m.format('YYYY-MM')} value={m.format('YYYY-MM')}>
+                                                            {m.format('MMMM YYYY')}
+                                                        </MenuItem>
+                                                    ))
+                                                })()}
+                                            </TextField>
+                                        )}
+                                    </Stack>
                                 </Grid>
 
                                 <Grid item xs={12}>
-                                  <Box sx={{ width: '100%', overflowX: 'auto', pb: 2 }}>
-                                    <Box sx={{ minWidth: 650 }}>
-                                      <LineChart
-                                        height={lineOverTimeBox.width < 600 ? 300 : 420}
-                                        dataset={chartData}
-                                        xAxis={[
-                                          {
-                                            dataKey: 'x',
-                                            label: 'Fecha',
-                                            scaleType: 'band',
-                                          },
-                                        ]}
-                                        series={[
-                                          {
-                                            id: 'Ingresos',
-                                            dataKey: 'ingresos',
-                                            label: 'Ingresos',
-                                            color: '#4CAF50',
-                                            showMark: true,
-                                            valueFormatter: (value) =>
-                                              value == null ? '' : value.toLocaleString('es-CL'),
-                                          },
-                                          {
-                                            id: 'Egresos',
-                                            dataKey: 'egresos',
-                                            // Cambiamos SOLO el label dentro del tooltip
-                                            label: (location) =>
-                                              location === 'tooltip' ? 'Egresos' : 'Egresos',
-                                            color: '#F5C242',
-                                            showMark: true,
-                                            valueFormatter: (value, context) => {
-                                              if (value == null) return '';
+                                    <Box sx={{ width: '100%', overflowX: 'auto', pb: 2 }}>
+                                        <Box sx={{ minWidth: 650 }}>
+                                            <LineChart
+                                                height={lineOverTimeBox.width < 600 ? 300 : 420}
+                                                dataset={chartData}
+                                                xAxis={[
+                                                    {
+                                                        dataKey: 'x',
+                                                        label: 'Fecha',
+                                                        scaleType: 'band'
+                                                    }
+                                                ]}
+                                                series={[
+                                                    {
+                                                        id: 'Ingresos',
+                                                        dataKey: 'ingresos',
+                                                        label: 'Ingresos',
+                                                        color: '#4CAF50',
+                                                        showMark: true,
+                                                        valueFormatter: value =>
+                                                            value == null ? '' : value.toLocaleString('es-CL')
+                                                    },
+                                                    {
+                                                        id: 'Egresos',
+                                                        dataKey: 'egresos',
+                                                        label: location => (location === 'tooltip' ? 'Egresos' : 'Egresos'),
+                                                        color: '#F5C242',
+                                                        showMark: true,
+                                                        valueFormatter: (value, context) => {
+                                                            if (value == null) return ''
 
-                                              const row = chartData[context.dataIndex]; // misma posición en el dataset
-                                              const ingresos = row?.ingresos ?? 0;
-                                              const egresos = row?.egresos ?? 0;
-                                              const total = ingresos - egresos;
+                                                            const row = chartData[context.dataIndex]
+                                                            const ingresos = row?.ingresos ?? 0
+                                                            const egresos = row?.egresos ?? 0
+                                                            const total = ingresos - egresos
 
-                                              // Lo que se verá en la fila de "Egresos" del tooltip
-                                              return `${egresos.toLocaleString('es-CL')} (    Total ${total.toLocaleString('es-CL')})`;
-                                            },
-                                          },
-                                        ]}
-                                        margin={{ top: 40, right: 20, bottom: 70, left: 50 }}
-                                      />
+                                                            return `${egresos.toLocaleString('es-CL')} (    Total ${total.toLocaleString(
+                                                                'es-CL'
+                                                            )})`
+                                                        }
+                                                    }
+                                                ]}
+                                                margin={{ top: 40, right: 20, bottom: 70, left: 50 }}
+                                            />
+                                        </Box>
                                     </Box>
-                                  </Box>
                                 </Grid>
                             </Grid>
                         </Card>
-
-
                     </Grid>
 
-                    <Grid item xs={12}>
-                    </Grid>
+                    <Grid item xs={12}></Grid>
                 </Grid>
 
                 <Dialog
