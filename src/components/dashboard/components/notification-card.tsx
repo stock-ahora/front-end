@@ -29,6 +29,8 @@ export default function NotificationCard({ sx = {} as object }) {
 
       let notificationsArray: any[] = []
 
+      setNotifications(notificationsArray)
+
       const r = await fetch(
         'https://pr1vz28mok.execute-api.us-east-2.amazonaws.com/prod/api/stock/movement/notification' ,
         {
@@ -78,7 +80,7 @@ export default function NotificationCard({ sx = {} as object }) {
 
   console.log(notifications)
 
-    const router = useRouter()
+  const router = useRouter()
 
   function timeAgo(dateString: string): string {
     const date = new Date(dateString);
