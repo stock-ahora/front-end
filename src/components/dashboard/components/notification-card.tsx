@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import {
     Box,
     Typography,
@@ -19,32 +19,101 @@ import { MdNotifications, MdArrowBack } from 'react-icons/md'
 import { useRouter } from 'next/navigation'
 
 export default function NotificationCard({ sx = {} as object }) {
+
+  const [notifications, setNotifications] = React.useState<any[]>([])
+
+
+  useEffect(() => {
+
+    async function load() {
+
+      let notificationsArray: any[] = []
+
+      const r = await fetch(
+        'https://pr1vz28mok.execute-api.us-east-2.amazonaws.com/prod/api/stock/movement/notification' ,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      )
+
+      const j = await r.json()
+
+      for (let i = 0; i < j.length; i++) {
+
+        const message = j[i].Message
+        const type = j[i].Type
+        const isRead = j[i].IsRead
+        const createdAt = timeAgo(j[i].Date)
+
+
+        const notification = {
+          id: 1,
+            title: type === 'request' ? 'Nueva Facturacion Pendiente': 'Peligro Stock',
+          description: message ,
+          time: createdAt,
+          icon: type === 'request' ?  FaHome : FaHome,
+          background: type === 'request' ? '#e3f2fd' : '#bbdefb',
+          border:  type === 'request' ? '#bbdefb' : '#f8bbd9',
+          iconGradient: type === 'request' ? 'linear-gradient(45deg, #1976d2, #42a5f5)' : 'linear-gradient(45deg, #e91e63, #f06292)',
+          timeColor: type === 'request' ? '#1976d2' : '#c2185b'
+        }
+
+        notificationsArray.push(notification)
+
+
+        console.log(notificationsArray)
+      }
+      setNotifications(notificationsArray)
+
+}
+      load()
+
+  }, [])
+
+
+
+
+  console.log(notifications)
+
     const router = useRouter()
 
-    const notifications = [
-        {
-            id: 1,
-            title: 'Nueva Facturacion Pendiente',
-            description: 'Se ha agregado una nueva facturacion',
-            time: 'Hace 30 minutos',
-            icon: FaHome,
-            background: '#e3f2fd',
-            border: '#bbdefb',
-            iconGradient: 'linear-gradient(45deg, #1976d2, #42a5f5)',
-            timeColor: '#1976d2'
-        },
-        {
-            id: 2,
-            title: 'Peligro Stock',
-            description: 'El producto CocaCola quedan menos de 100 unidades - Requiere renovación',
-            time: 'Hace 1 día',
-            icon: FaClock,
-            background: '#fce4ec',
-            border: '#f8bbd9',
-            iconGradient: 'linear-gradient(45deg, #e91e63, #f06292)',
-            timeColor: '#c2185b'
-        }
-    ]
+  function timeAgo(dateString: string): string {
+    const date = new Date(dateString);
+    const now = new Date();
+
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    const intervals: { [key: string]: number } = {
+      año: 31536000,
+      mes: 2592000,
+      día: 86400,
+      hora: 3600,
+      minuto: 60,
+      segundo: 1,
+    };
+
+    for (const unit in intervals) {
+      const value = Math.floor(seconds / intervals[unit]);
+      if (value >= 1) {
+
+        if (unit === "segundo") return "hace unos segundos";
+
+        // Pluralización
+        const plural = value > 1 ?
+          (unit === "mes" ? "meses" : unit + "s")
+          : unit;
+
+        return `hace ${value} ${plural}`;
+      }
+    }
+
+    return "justo ahora";
+  }
+
+
 
     return (
         <Card
