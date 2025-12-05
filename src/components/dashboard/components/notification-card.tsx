@@ -18,9 +18,11 @@ import { FaHome, FaClock } from 'react-icons/fa'
 import { MdNotifications, MdArrowBack } from 'react-icons/md'
 import { useRouter } from 'next/navigation'
 
+
 export default function NotificationCard({ sx = {} as object }) {
 
   const [notifications, setNotifications] = React.useState<any[]>([])
+
 
 
   useEffect(() => {
@@ -29,7 +31,6 @@ export default function NotificationCard({ sx = {} as object }) {
 
       let notificationsArray: any[] = []
 
-      setNotifications(notificationsArray)
 
       const r = await fetch(
         'https://pr1vz28mok.execute-api.us-east-2.amazonaws.com/prod/api/stock/movement/notification' ,
@@ -72,6 +73,9 @@ export default function NotificationCard({ sx = {} as object }) {
 
 }
       load()
+
+    const interval = setInterval(load, 5000); // cada 5 segundos
+    return () => clearInterval(interval);
 
   }, [])
 
