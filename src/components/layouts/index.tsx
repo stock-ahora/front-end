@@ -14,7 +14,6 @@ import InventoryIcon from '@mui/icons-material/Inventory'
 import ReceiptIcon from '@mui/icons-material/Receipt'
 import NotificationsIcon from '@mui/icons-material/Notifications'
 import DashboardIcon from '@mui/icons-material/Dashboard'
-import NotificationsBell from '@/components/dashboard/components/notification-bell'
 import UserQuickMenu from '@/components/dashboard/components/user-quick-menu'
 
 export function Layout({children}: { children: React.ReactNode }) {
@@ -76,7 +75,6 @@ export function Layout({children}: { children: React.ReactNode }) {
                     </Box>
 
 
-                    <NotificationsBell/>
                     <UserQuickMenu/>
 
                     <IconButton
